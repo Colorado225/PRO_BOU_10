@@ -271,18 +271,19 @@ export const BakeryProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           api.get<CustomOrder[]>('/api/operations/custom-orders'),
         ]);
 
-        setStores(storesData);
-        setProducts(productsData);
-        setMaterials(materialsData);
-        setRecipes(recipesData);
-        setCustomers(customersData);
-        setSuppliers(suppliersData);
-        setProductionOrders(productionOrdersData);
-        setSales(salesData);
-        setPurchases(purchasesData);
-        setLosses(lossesData);
-        setCashTransactions(cashTransactionsData);
-        setCustomOrders(customOrdersData);
+        // Only update state if API returned non-empty data (keep defaults otherwise)
+        if (storesData?.length) setStores(storesData);
+        if (productsData?.length) setProducts(productsData);
+        if (materialsData?.length) setMaterials(materialsData);
+        if (recipesData?.length) setRecipes(recipesData);
+        if (customersData?.length) setCustomers(customersData);
+        if (suppliersData?.length) setSuppliers(suppliersData);
+        if (productionOrdersData?.length) setProductionOrders(productionOrdersData);
+        if (salesData?.length) setSales(salesData);
+        if (purchasesData?.length) setPurchases(purchasesData);
+        if (lossesData?.length) setLosses(lossesData);
+        if (cashTransactionsData?.length) setCashTransactions(cashTransactionsData);
+        if (customOrdersData?.length) setCustomOrders(customOrdersData);
       } catch (err) {
         console.warn('Utilisation des données locales :', (err as ApiError).message);
       } finally {

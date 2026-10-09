@@ -1,109 +1,140 @@
-/**
- * Contexte d'authentification et de permissions (chantier 1.2).
- *
- * - Restaure la session au démarrage (jeton → /api/auth/me).
- * - Expose l'utilisateur courant, son rôle et ses permissions.
- * - Fournit `can()` pour masquer les actions non autorisées dans l'interface.
- */
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import {
-  login as apiLogin,
-  logout as apiLogout,
-  me as apiMe,
-  getToken,
-  type SessionUser,
-} from '../services/api';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  storeId: string | null;
+  organizationId: string | null;
+  permissions: string[];
+}
 
 interface AuthContextType {
-  user: SessionUser | null;
-  /** Vrai pendant la restauration initiale de session. */
+  user: User | null;
   isRestoring: boolean;
-  /** Vrai pendant une tentative de connexion. */
-  isLoggingIn: boolean;
-  error: string | null;
   login: (email: string, password: string) => Promise<void>;
+  demoLogin: () => void;
   logout: () => void;
-  /** Indique si l'utilisateur courant possède une permission. */
   can: (permission: string) => boolean;
-  /** Indique si l'utilisateur courant a au moins l'un des rôles donnés. */
-  hasRole: (...roles: SessionUser['role'][]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<SessionUser | null>(null);
-  const [isRestoring, setIsRestoring] = useState<boolean>(true);
-  const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+/** Utilisateur démo par défaut */
+const DEMO_USER: User = {
+  id: 'demo-gerant',
+  name: 'Aminata Koné',
+  email: 'gerant@boulangeriepro.ci',
+  role: 'gerant',
+  storeId: 'store-1',
+  organizationId: 'org-1',
+  permissions: ['*'],
+};
 
-  // Restauration de session : jeton -> GET /api/auth/me.
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isRestoring, setIsRestoring] = useState(true);
+  const restoredRef = useRef(false);
+
+  // Restaurer la session au démarrage (une seule fois)
   useEffect(() => {
-    const restore = async () => {
-      setIsRestoring(true);
-      try {
-        if (!getToken()) {
-          // Aucun jeton : pas d'utilisateur connecté
-          setUser(null);
-          return;
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+
+    const mode = localStorage.getItem('auth_mode');
+    
+    if (mode === 'demo') {
+      setUser(DEMO_USER);
+      setIsRestoring(false);
+      return;
+    }
+
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      setIsRestoring(false);
+      return;
+    }
+
+    fetch('/api/auth/me', {
+      headers: { 'Authorization': `Bearer ${token}` },
+    })
+      .then(res => {
+        if (!res.ok) {
+          localStorage.removeItem('auth_token');
+          throw new Error('Session invalide');
         }
-        const profile = await apiMe();
-        setUser(profile);
-      } catch {
-        apiLogout();
+        return res.json();
+      })
+      .then(data => {
+        const userData = data.data?.user ?? data.data ?? data.user ?? null;
+        setUser(userData);
+      })
+      .catch(() => {
         setUser(null);
-      } finally {
+      })
+      .finally(() => {
         setIsRestoring(false);
-      }
-    };
-    void restore();
+      });
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    setIsLoggingIn(true);
-    setError(null);
-    try {
-      const profile = await apiLogin(email, password);
-      setUser(profile);
-    } catch (err) {
-      // Échec de connexion : propager l'erreur sans fallback de démo
-      setError(err instanceof Error ? err.message : 'Échec de la connexion.');
-      throw err;
-    } finally {
-      setIsLoggingIn(false);
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Échec de la connexion');
     }
+
+    const token = data.data?.token || data.token;
+    const userData = data.data?.user || data.user;
+
+    if (!token || !userData) {
+      throw new Error('Réponse invalide du serveur');
+    }
+
+    localStorage.setItem('auth_token', token);
+    localStorage.removeItem('auth_mode');
+    setUser(userData);
+  }, []);
+
+  /** Connexion démo instantanée — pas d'appel API */
+  const demoLogin = useCallback(() => {
+    localStorage.setItem('auth_mode', 'demo');
+    localStorage.removeItem('auth_token');
+    setUser(DEMO_USER);
   }, []);
 
   const logout = useCallback(() => {
-    apiLogout();
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_mode');
     setUser(null);
   }, []);
 
   const can = useCallback(
-    (permission: string) =>
-      Boolean(
-        user?.permissions?.includes('*') ||
-        user?.permissions?.includes(permission),
-      ),
-    [user]
-  );
-
-  const hasRole = useCallback(
-    (...roles: SessionUser['role'][]) => Boolean(user && roles.includes(user.role)),
+    (permission: string) => {
+      if (!user?.permissions) return false;
+      return user.permissions.includes('*') || user.permissions.includes(permission);
+    },
     [user]
   );
 
   return (
-    <AuthContext.Provider
-      value={{ user, isRestoring, isLoggingIn, error, login, logout, can, hasRole }}
-    >
+    <AuthContext.Provider value={{ user, isRestoring, login, demoLogin, logout, can }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = (): AuthContextType => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth doit être utilisé dans un AuthProvider');
-  return ctx;
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
 };

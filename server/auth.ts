@@ -51,7 +51,7 @@ export const signToken = (payload: AuthPayload): string =>
 
 /** Créer un refresh token aléatoire cryptographiquement sécurisé */
 export const generateRefreshToken = (): string => {
-  return crypto.randomUUID() + crypto.randomUUID(); // 32 caractères + 32 caractères = 64 caractères sécurisés
+  return crypto.randomUUID() + crypto.randomUUID(); // 2 UUIDs (36 chars × 2 = 72 caractères sécurisés)
 };
 
 /**
