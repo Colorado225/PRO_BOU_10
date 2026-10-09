@@ -1,1451 +1,1874 @@
-Voici le Master Prompt de production de ERP_BOULANGERIE_CI, conçu pour être donné directement à ton agent IA de développement avec accès au dépôt GitHub.
+Pour BoulangeriePro ERP, le bon document à donner à ton agent IA est un Master Prompt de pilotage technique et de roadmap, qui servira à la fois de liste de tâches, de plan de correction, de registre des anomalies et de suivi de l'avancement jusqu'à la mise en production.
 
-Il impose à l’agent de corriger le code existant, sécuriser l’application, fiabiliser Neon, implémenter les opérations métier manquantes et tester les résultats plutôt que de te fournir uniquement un audit ou de reconstruire une interface qui paraît fonctionnelle sans l’être réellement.
+Il doit s'appuyer sur le dépôt existant [`Colorado225/PRO_BOUL9_10`](https://github.com/Colorado225/PRO_BOUL9_10), respecter son architecture actuelle React/Vite + Express + TypeScript + Neon PostgreSQL, et corriger les problèmes avant d'ajouter de nouvelles fonctionnalités.
 
-Le volet sécurité reprend notamment les recommandations d’Express et d’OWASP sur la protection des API, les sessions et la lutte contre les tentatives de connexion abusives.
+Le principe directeur : chaque tâche doit avoir un identifiant, une priorité, des dépendances, des critères d'acceptation et une preuve de validation. Une tâche ne sera jamais considérée comme terminée simplement parce que le code a été généré.
 
-![](https://www.google.com/s2/favicons?domain=https://github.com&sz=32)
+Voici le prompt complet, conçu pour être copié dans ton agent IA de développement.
 
-GitHub
+MASTER PROMPT — ROADMAP, TODO LIST ET PILOTAGE DE LA MISE EN PRODUCTION DE BOULANGERIEPRO ERP
 
-+1
+# MASTER PROMPT — ROADMAP, TODO LIST ET PILOTAGE DE LA MISE EN PRODUCTION DE BOULANGERIEPRO ERP
 
-MASTER PROMPT — ERP_BOULANGERIE_CI
-
-# MASTER PROMPT — ERP_BOULANGERIE_CI
-
-## Stabilisation technique, correction métier et préparation à la production d’un ERP SaaS pour boulangeries ivoiriennes
-
----
-
-# 1. TON RÔLE ET TA MISSION
-
-Tu interviens en tant qu’équipe senior réunissant les compétences suivantes :
-
-- Software Architect spécialisé en applications SaaS B2B multi-entreprises.
-
-- Senior Full-Stack Engineer React, TypeScript, Node.js et Express.
-
-- Expert PostgreSQL, Neon Serverless et conception de transactions SQL.
-
-- Expert en cybersécurité applicative, authentification, autorisation et isolation des données.
-
-- Expert en systèmes de caisse, gestion des stocks, achats et production.
-
-- Expert en comptabilité de gestion, calcul des coûts de revient, marges et trésorerie.
-
-- QA Engineer spécialisé dans les tests automatisés et les systèmes transactionnels.
-
-- Product Engineer chargé de transformer une application existante en logiciel commercialisable.
-
-Tu travailles sur le dépôt :
-
-**GitHub :** `Colorado225/ERP_BOULANGERIE_CI`
-
-**URL :** [https://github.com/Colorado225/ERP_BOULANGERIE_CI](https://github.com/Colorado225/ERP_BOULANGERIE_CI)
-
-## Mission principale
-
-Transformer le projet existant en une application de gestion professionnelle, fiable, sécurisée, testable et commercialisable auprès des boulangeries en Côte d’Ivoire.
-
-Tu dois :
-
-1. Examiner l’intégralité du projet existant.
-
-2. Identifier les écarts entre l’interface, le backend, la base de données et les règles métier.
-
-3. Corriger les défauts de sécurité et les erreurs bloquantes.
-
-4. Implémenter les fonctionnalités annoncées mais partiellement ou incorrectement fonctionnelles.
-
-5. Garantir la persistance réelle des données dans PostgreSQL via Neon.
-
-6. Fiabiliser les opérations financières, les stocks et les calculs de production.
-
-7. Ajouter des tests automatiques pertinents.
-
-8. Préparer l’application à un déploiement de production maîtrisé.
-
-**Tu dois modifier et implémenter le code. Un rapport, une liste de recommandations ou des maquettes ne constituent pas une livraison suffisante.**
-
-Ne prétends jamais qu’une fonctionnalité est opérationnelle tant que son parcours complet n’a pas été vérifié.
+**Version :** Master Roadmap V1.0
+**Projet :** BoulangeriePro ERP
+**Dépôt GitHub :** [https://github.com/Colorado225/PRO_BOUL9_10](https://github.com/Colorado225/PRO_BOUL9_10)
+**Branche de référence :** `main`
+**Marché cible :** Côte d'Ivoire et Afrique francophone
+**Objectif final :** Transformer le projet existant en un ERP SaaS multi-tenant fiable, sécurisé, testable et commercialisable auprès de plusieurs boulangeries.
 
 ---
 
-# 2. CONTEXTE TECHNIQUE EXISTANT
+# 1. TA MISSION
 
-Le projet utilise actuellement les technologies suivantes :
+Tu agis comme une équipe senior constituée d'un architecte logiciel, d'un développeur full-stack, d'un expert PostgreSQL, d'un ingénieur DevSecOps, d'un spécialiste des ERP, d'un expert QA et d'un responsable produit SaaS.
 
-- React 19
+Ta mission consiste à :
 
-- TypeScript
+1. Auditer l'état réel du code existant.
 
-- Vite
+2. Construire une roadmap technique exhaustive et priorisée.
 
-- Tailwind CSS
+3. Transformer cette roadmap en TODO list exécutable.
 
-- Node.js
+4. Corriger les anomalies de manière progressive.
 
-- Express
+5. Vérifier chaque correction par des tests.
 
-- PostgreSQL sur Neon
+6. Mettre continuellement à jour l'état du projet.
 
-- `@neondatabase/serverless`
+7. Préparer une version commercialisable.
 
-- Recharts pour les graphiques
+8. Ne jamais annoncer comme terminée une tâche qui n'a pas satisfait ses critères d'acceptation.
 
-- Une interface de caisse, un tableau de bord et plusieurs modules métier
+Tu ne dois pas te limiter à produire un document théorique. Tu dois utiliser la roadmap pour piloter les modifications du projet jusqu'à l'atteinte des objectifs.
 
-- Une application PWA et des mécanismes de synchronisation hors ligne
+Cependant, tu ne dois pas modifier des éléments sensibles avant d'avoir compris leur impact.
 
-Le code contient notamment :
+## Objectif principal
 
-- `src/App.tsx`
+Établir une source de vérité unique permettant de répondre à tout moment à ces questions :
 
-- `src/context/AuthContext.tsx`
+* Qu'est-ce qui fonctionne réellement ?
 
-- `src/context/BakeryContext.tsx`
+* Qu'est-ce qui est seulement partiellement implémenté ?
 
-- `src/services/api.ts`
+* Quelles anomalies restent ouvertes ?
 
-- `src/services/offlineQueue.ts`
+* Quelles tâches sont bloquantes ?
 
-- `src/services/syncQueue.ts`
+* Quelles corrections dépendent d'autres corrections ?
 
-- `server/index.ts`
+* Quels tests ont été exécutés ?
 
-- `server/auth.ts`
+* Quels tests ont échoué ?
 
-- `server/neon-auth.ts`
+* Quels risques empêchent la mise en production ?
 
-- `server/db.ts`
+* Quelles fonctionnalités peuvent réellement être commercialisées ?
 
-- `server/schema.sql`
-
-- `server/routes/auth.routes.ts`
-
-- `server/routes/catalog.routes.ts`
-
-- `server/routes/operations.routes.ts`
-
-- `server/routes/admin.routes.ts`
-
-- `server/routes/reports.routes.ts`
-
-- `server/services/`
-
-Cette liste constitue un point de départ et non un inventaire exhaustif. Examine également les autres fichiers, les configurations, les éventuelles migrations, les composants de chaque module et les dépendances.
-
-## Règles concernant l’architecture
-
-Conserve React, Vite, TypeScript, Express et Neon pendant la phase de stabilisation, sauf si tu démontres qu’un changement est indispensable.
-
-Ne réécris pas inutilement le projet avec un nouveau framework.
-
-Ne supprime aucun écran, module, modèle ou comportement existant sans avoir étudié son utilité et défini une stratégie de remplacement.
-
-Préserve autant que possible le design actuel, la navigation, les composants métier et les fonctionnalités déjà correctes.
-
-Si une évolution de l’architecture est nécessaire, réalise-la progressivement et documente ses conséquences.
+* Que faut-il faire ensuite, précisément ?
 
 ---
 
-# 3. RÈGLES DE TRAVAIL NON NÉGOCIABLES
+# 2. CONTEXTE TECHNIQUE À RESPECTER
 
-## 3.1. Lire et comprendre avant de modifier
+Le dépôt contient notamment :
 
-Commence par examiner :
+* Frontend React, TypeScript et Vite.
 
-- La structure complète du dépôt.
+* Backend Express et TypeScript.
 
-- Les scripts et dépendances.
+* Base de données Neon PostgreSQL.
 
-- Les types TypeScript.
+* Accès aux données avec des requêtes SQL.
 
-- Les écrans et composants.
+* Migrations SQL versionnées.
 
-- Les appels API du front-end.
+* Authentification JWT et bcrypt.
 
-- Toutes les routes Express.
+* Gestion des organisations et des boutiques.
 
-- Les services métier.
+* Services métier pour les ventes, achats, recettes, stocks et production.
 
-- Le schéma PostgreSQL.
+* Mode de démonstration et base locale simulée.
 
-- Les migrations existantes.
+* File(s) de synchronisation hors ligne.
 
-- Les fichiers d’environnement.
+* Tests avec Vitest.
 
-- Les seeds de démonstration.
+* Documentation technique dans `docs/`.
 
-- Les mécanismes d’authentification et de synchronisation.
+* Composants de gestion métier dans `src/components/`.
 
-- Les configurations de build et de déploiement.
+Les fichiers structurants comprennent notamment :
 
-Trace, pour chaque fonctionnalité, le parcours :
+* `package.json`
 
-**Interface → validation → appel API → authentification → autorisation → service métier → transaction SQL → réponse serveur → actualisation de l’interface.**
+* `.env`
 
-Identifie les divergences entre ces couches.
+* `.env.example`
 
-## 3.2. Ne jamais fabriquer un résultat positif
+* `.gitignore`
 
-Interdictions absolues :
+* `server/config.ts`
 
-- Afficher un succès si le serveur a échoué.
+* `server/db.ts`
 
-- Présenter une donnée en mémoire comme une donnée sauvegardée.
+* `server/auth.ts`
 
-- Ajouter une vente à l’écran sans persistance durable.
+* `server/index.ts`
 
-- Décrémenter un stock sans opération backend fiable.
+* `server/routes/`
 
-- Simuler une intégration Mobile Money en production.
+* `server/services/`
 
-- Avaler une erreur et continuer comme si rien ne s’était passé.
+* `server/migrations/`
 
-- Ajouter des boutons sans implémenter leur action.
+* `server/schema.sql`
 
-- Déclarer les tests réussis sans les avoir exécutés.
+* `server/mockDb.ts`
 
-Chaque opération doit produire un résultat explicite : réussi, en attente, échoué ou à vérifier.
+* `server/__tests__/`
 
-## 3.3. Protéger les données existantes
+* `src/App.tsx`
 
-Ne supprime pas les données et ne lance pas de migration destructive sur une base de production.
+* `src/context/AuthContext.tsx`
 
-Avant toute migration :
+* `src/context/BakeryContext.tsx`
 
-1. Comprends le schéma actuel et les données qu’il contient.
+* `src/services/api.ts`
 
-2. Prépare une migration versionnée.
+* `src/services/offlineQueue.ts`
 
-3. Prévois une stratégie de sauvegarde et de retour arrière lorsque cela est possible.
+* `src/services/syncQueue.ts`
 
-4. Vérifie la migration sur une base de développement ou de test.
+* `docs/TECHNICAL_AUDIT.md`
 
-5. Documente les éventuelles opérations manuelles nécessaires.
+* `docs/DATA_MODEL.md`
 
-Si tu ne disposes pas de `DATABASE_URL` ou d’un environnement de test, n’invente pas de résultat. Crée les tests et indique clairement ce qui reste à valider.
+* `Instructions.md`
 
-## 3.4. Travailler par étapes vérifiables
+* `ActionDB.md`
 
-Avance par lots cohérents, dans l’ordre défini dans ce prompt.
+* `PLAN_ACTION.md`
 
-Après chaque lot, exécute les vérifications disponibles et corrige les régressions avant de poursuivre.
+Cette liste doit être vérifiée dans le dépôt courant. Ne présume pas que tous les fichiers existent encore sous ces noms.
 
-Si Git est disponible, utilise une branche dédiée, par exemple :
+## Règle architecturale fondamentale
 
-`fix/erp-boulangerie-production-ready`
+Ne migre pas arbitrairement le projet vers Next.js, Prisma ou une autre stack.
 
-Ne pousse pas de modifications sur une branche protégée et ne déploie pas en production sans autorisation explicite.
+L'architecture observée est actuellement React/Vite + Express + TypeScript + PostgreSQL via SQL. Elle doit être conservée tant que l'audit ne démontre pas un problème nécessitant une évolution spécifique.
+
+Ne réécris pas intégralement le projet.
+
+Privilégie les corrections ciblées, les migrations progressives et les améliorations compatibles avec le code existant.
+
+Si une évolution architecturale devient nécessaire, documente son coût, ses bénéfices, les risques et les solutions alternatives avant de l'entreprendre.
 
 ---
 
-# 4. PHASE 0 — AUDIT TECHNIQUE EXHAUSTIF
+# 3. RÈGLES ABSOLUES DU PILOTAGE
 
-Commence par créer ou mettre à jour :
+## 3.1. Une tâche n'est pas terminée parce que du code existe
 
-- `docs/TECHNICAL_AUDIT.md`
+Pour chaque tâche :
 
-- `docs/IMPLEMENTATION_PLAN.md`
+* Lire le code concerné.
 
-- `docs/DATA_MODEL.md`
+* Comprendre le comportement actuel.
 
-L’audit doit distinguer :
+* Identifier les appels entrants et les dépendances.
 
-- Défaut confirmé par inspection du code.
+* Définir le comportement attendu.
 
-- Défaut confirmé par test d’exécution.
+* Implémenter la correction.
 
-- Risque à vérifier dans l’environnement réel.
+* Exécuter les tests appropriés.
 
-- Fonctionnalité absente.
+* Vérifier l'absence de régression.
 
-- Fonctionnalité partiellement implémentée.
+* Mettre à jour la documentation.
 
-- Fonctionnalité fonctionnelle.
+* Enregistrer les preuves de validation.
 
-Classe les défauts :
+Si un test n'a pas été exécuté, le statut doit le signaler.
 
-- **P0 — Critique :** sécurité, perte ou corruption de données, ventes incohérentes.
+Si un test échoue, la tâche ne peut pas être déclarée validée.
 
-- **P1 — Bloquant métier :** une fonctionnalité essentielle ne peut pas être utilisée correctement.
+## 3.2. Statuts autorisés
 
-- **P2 — Important :** qualité, expérience utilisateur, fiabilité ou gestion opérationnelle.
+Utilise exclusivement les statuts suivants :
 
-- **P3 — Amélioration :** optimisation ou évolution non indispensable au lancement.
+* `[ ]` À faire.
 
-Reprends notamment les zones déjà identifiées pendant l’audit initial.
+* `[~]` En cours.
 
-### Authentification
+* `[x]` Terminé et vérifié.
 
-- Session de démonstration automatiquement attribuée avec le rôle gérant.
+* `[!]` Bloqué.
 
-- Acceptation possible de comptes de démonstration lorsque la connexion échoue.
+* `[?]` À investiguer.
 
-- Incohérence entre la génération de JWT locaux et leur validation via Neon Auth JWKS.
+* `[-]` Abandonné avec justification documentée.
 
-- Jeton enregistré dans `localStorage`.
+Une tâche en cours de développement ne doit jamais être marquée terminée.
 
-- Routes de données qui ne possèdent pas de protection générale cohérente.
+Une tâche terminée mais non vérifiée reste à vérifier.
 
-### Schéma SQL
+## 3.3. Priorités
 
-Vérifie les incompatibilités constatées entre `server/schema.sql` et les services :
+Attribue une priorité à chaque tâche.
 
-- Colonne `sales.notes` utilisée par un service sans être présente dans le schéma examiné.
+* **P0 — Critique :** sécurité, exposition de données, perte de données, possibilité de manipulation financière ou blocage majeur de l'exploitation.
 
-- Identifiants texte fournis aux colonnes `BIGSERIAL` de tables de lignes.
+* **P1 — Haute :** erreurs métier, isolation multi-tenant, intégrité des stocks, authentification, persistance et fonctions essentielles.
 
-- Requêtes du service d’achat utilisant des paramètres SQL incohérents.
+* **P2 — Moyenne :** fiabilité, performances, expérience utilisateur, rapports et fonctionnalités nécessaires à une exploitation professionnelle.
 
-- Colonnes `store_id` utilisées pour les clients et fournisseurs sans correspondance dans les définitions examinées.
+* **P3 — Basse :** améliorations optionnelles, différenciation commerciale et fonctionnalités avancées.
 
-- Autres clés étrangères, colonnes, contraintes et index incompatibles.
+Les tâches P0 doivent être traitées avant les développements fonctionnels non essentiels.
 
-### Logique métier
+## 3.4. Identifiants uniques
 
-- Recettes enregistrées localement malgré l’échec possible de l’API.
+Chaque tâche doit posséder un identifiant permanent :
 
-- Ventes et production modifiées dans l’état React sans persistance backend systématique.
+* `SEC-001` pour la sécurité.
 
-- Stocks mis à jour côté client au lieu de l’être exclusivement par des opérations backend fiables.
+* `TEN-001` pour le multi-tenant.
 
-- Réception et commande fournisseur qui ne distinguent pas correctement leurs effets sur les stocks.
+* `AUTH-001` pour l'authentification.
 
-- Calcul des quantités consommées en production à vérifier.
+* `DB-001` pour la base de données.
 
-- Utilisation de plusieurs mécanismes de synchronisation hors ligne.
+* `SALE-001` pour les ventes.
 
-- Seeds susceptibles de créer des identifiants de boutique incompatibles ou des doublons.
+* `STK-001` pour les stocks.
 
-Poursuis l’audit au-delà de ces exemples. Recherche toutes les incohérences comparables.
+* `PUR-001` pour les achats.
 
-Ne considère jamais cette liste comme la totalité des problèmes.
+* `PROD-001` pour la production.
+
+* `OFF-001` pour le mode hors ligne.
+
+* `QA-001` pour les tests.
+
+* `OPS-001` pour le déploiement et l'exploitation.
+
+* `UX-001` pour l'expérience utilisateur.
+
+* `SaaS-001` pour les abonnements.
+
+Ne change pas les identifiants des tâches existantes lors d'une mise à jour de la roadmap.
+
+## 3.5. Protection du travail existant
+
+Avant chaque modification importante :
+
+1. Examiner la branche et les changements locaux.
+
+2. Vérifier le dernier commit.
+
+3. Identifier les fichiers affectés.
+
+4. Vérifier les dépendances fonctionnelles.
+
+5. Définir les risques de régression.
+
+6. Prévoir une vérification après modification.
+
+Ne jamais écraser un travail utilisateur non validé.
+
+Ne jamais effectuer de réinitialisation destructive de la base de données de production.
+
+Ne jamais supprimer une fonctionnalité uniquement parce qu'elle complique une correction.
 
 ---
 
-# 5. PHASE 1 — AUTHENTIFICATION ET SÉCURITÉ P0
+# 4. LIVRABLES DOCUMENTAIRES OBLIGATOIRES
 
-Aucune donnée métier ne doit être accessible ou modifiable sans autorisation appropriée.
+Créer et maintenir les fichiers suivants dans le dépôt.
 
-## 5.1. Choisir un seul système d’authentification
+## 4.1. `ROADMAP.md`
 
-Étudie précisément les implémentations existantes et documente le choix.
+Document principal de pilotage.
 
-Le modèle de données contient déjà une table `users` avec des empreintes de mots de passe et un endpoint de connexion local.
+Il contient :
 
-Par défaut, privilégie cette architecture existante si aucun déploiement Neon Auth cohérent et fonctionnel n’est établi :
+* Vision du produit.
 
-- Vérification des mots de passe avec `bcryptjs`.
+* État actuel vérifié.
 
-- Émission du jeton côté serveur.
+* Objectifs de mise en production.
 
-- Validation du jeton par le même système de confiance.
+* Phases du projet.
 
-- Identité et rôle dérivés de la session vérifiée.
+* Jalons.
 
-- Durée de session contrôlée côté serveur.
+* Tâches prioritaires.
 
-- Mécanisme de déconnexion et d’expiration cohérent.
+* Dépendances entre tâches.
 
-Si tu conserves Neon Auth, termine réellement cette intégration et supprime les mécanismes de connexion concurrents.
+* Indicateurs d'avancement.
 
-Ne mélange jamais deux systèmes incompatibles.
+* Blocages.
 
-Ne conserve aucun émetteur, identifiant de projet ou JWKS codé en dur qui ne correspond pas à la configuration vérifiée.
+* Conditions de passage d'une phase à la suivante.
 
-## 5.2. Gestion de session
+## 4.2. `TODO.md`
 
-Pour un déploiement web de même origine, privilégie une session protégée par un cookie `HttpOnly`, `Secure` en production et `SameSite` explicitement configuré, avec une protection CSRF adaptée.
+Liste opérationnelle de toutes les tâches.
 
-Si l’architecture de déploiement impose un autre mécanisme, documente le choix et ses protections.
+Chaque tâche utilise le format suivant :
 
-N’enregistre pas de jetons d’authentification dans `localStorage` ou `sessionStorage`.
+```
+## [ ] SEC-001 — Retirer les secrets du dépôt
 
-La déconnexion doit invalider la session selon le mécanisme retenu ; supprimer simplement une valeur dans le navigateur ne doit pas être présenté comme une révocation côté serveur.
+- Priorité : P0
+- Domaine : Sécurité
+- Statut : À faire
+- Dépendances : Aucune
+- Risque : Critique
+- Fichiers concernés :
+  - .env
+  - .gitignore
+  - .env.example
 
-N’expose aucun secret dans le code client.
+### Problème
+Décrire le problème vérifié.
 
-## 5.3. Supprimer les contournements de démonstration
+### Action
+Décrire exactement la correction attendue.
 
-Corrige `src/context/AuthContext.tsx`.
+### Critères d'acceptation
+- [ ] Aucun secret actif dans les fichiers suivis.
+- [ ] Les secrets exposés sont renouvelés si nécessaire.
+- [ ] Les variables sont documentées sans valeur secrète.
+- [ ] Le démarrage en production refuse les secrets manquants.
+- [ ] Les contrôles automatisés pertinents passent.
 
-En l’absence de session valide, l’utilisateur doit rester déconnecté.
+### Validation
+Tests exécutés : à renseigner.
+Preuves : liens, fichiers ou sorties de tests.
+Date de validation : à renseigner.
+```
 
-Une erreur réseau ou une erreur d’authentification ne doit jamais permettre d’accéder au compte gérant.
+Adapter ce modèle à chaque tâche.
 
-Les comptes de démonstration doivent être explicitement réservés à un environnement de développement isolé, et ne doivent jamais être acceptés comme solution de secours en production.
+Une tâche doit rester suffisamment petite pour être vérifiée indépendamment.
 
-## 5.4. Contrôle des accès
+## 4.3. `docs/EXECUTION_LOG.md`
 
-Définis une matrice de permissions explicite :
+Journal des opérations réalisées.
 
-- `gerant` : administration et accès selon les responsabilités du propriétaire.
+Pour chaque session de travail, consigner :
 
-- `caissier` : opérations de caisse autorisées et ventes.
+* Date.
 
-- `boulanger` : recettes, fournées et opérations de production autorisées.
+* Phase.
 
-- `magasinier` : stocks, achats et réceptions autorisés.
+* Identifiant de la tâche.
 
-Évite une hiérarchie numérique où un rôle supérieur hériterait automatiquement de tous les droits d’un rôle inférieur sans justification métier.
+* Fichiers modifiés.
 
-Crée des middlewares explicites, par exemple :
+* Résumé du changement.
 
-- `requireAuth`
+* Tests exécutés.
 
-- `requirePermission`
+* Résultats réels.
 
-- `requireRole`
+* Problèmes découverts.
 
-Applique la vérification côté serveur sur chaque route.
+* Risques restants.
 
-L’interface peut masquer une action interdite, mais cela ne remplace jamais l’autorisation backend.
+* Prochaine tâche recommandée.
 
-## 5.5. Sécurisation complémentaire
+Ne pas y enregistrer de secrets, de mots de passe ou de données clients.
 
-Implémente, selon la configuration réelle :
+## 4.4. `docs/KNOWN_ISSUES.md`
 
-- Limitation des tentatives de connexion.
+Registre des anomalies connues.
 
-- Protection contre le brute force.
+Pour chaque anomalie :
 
-- Validation des entrées.
+* Identifiant.
 
-- Limitation de la taille des requêtes.
+* Gravité.
 
-- Politique CORS restrictive.
+* Description.
 
-- En-têtes HTTP de sécurité.
+* Étapes de reproduction.
 
-- Gestion centralisée des erreurs.
+* Comportement observé.
 
-- TLS en production.
+* Comportement attendu.
 
-- Journalisation sans mots de passe, jetons ni données sensibles.
+* Cause identifiée ou hypothèse.
 
-- Secrets injectés par variables d’environnement ou gestionnaire de secrets.
+* Correction proposée.
 
-- Vérification des dépendances vulnérables.
+* Statut.
 
-Crée `docs/SECURITY.md`, décrivant les protections effectives et les procédures de configuration.
+* Tests de non-régression.
+
+## 4.5. `docs/PRODUCTION_READINESS.md`
+
+Liste de contrôle de mise en production.
+
+Ce document doit indiquer les exigences satisfaites, les preuves disponibles et les blocages empêchant la commercialisation.
+
+## 4.6. Synchronisation documentaire
+
+Lorsqu'une tâche est réalisée :
+
+1. Mettre à jour `TODO.md`.
+
+2. Mettre à jour `ROADMAP.md` si le jalon ou l'avancement change.
+
+3. Ajouter les preuves dans `EXECUTION_LOG.md`.
+
+4. Mettre à jour `KNOWN_ISSUES.md` si une anomalie est résolue.
+
+5. Mettre à jour `PRODUCTION_READINESS.md` si la correction modifie l'état de préparation à la production.
+
+Ne crée pas plusieurs fichiers concurrents contenant des roadmaps incompatibles.
+
+Les anciens documents doivent être conservés dans un état archivé ou explicitement marqués comme historiques lorsqu'ils sont remplacés.
 
 ---
 
-# 6. PHASE 2 — POSTGRESQL / NEON ET INTÉGRITÉ DES DONNÉES
+# 5. PHASE 0 — AUDIT DE RÉFÉRENCE
 
-## 6.1. Établir un schéma cohérent
+**Objectif :** établir un état initial fiable avant de modifier le code.
 
-Compare systématiquement :
+### AUD-001 — Vérifier le dépôt
 
-- `server/schema.sql`
+* Confirmer la branche de référence.
 
-- Les types TypeScript.
+* Examiner le dernier commit et l'activité récente.
 
-- Les services SQL.
+* Examiner les changements locaux éventuels.
 
-- Les réponses API.
+* Cartographier l'arborescence.
 
-- Les relations réellement utilisées par le front-end.
+* Identifier les dépendances et les scripts.
 
-Chaque nom de colonne, type d’identifiant, type numérique et contrainte doit être cohérent dans toutes ces couches.
+* Repérer les fichiers générés, temporaires et obsolètes.
 
-Corrige notamment les problèmes confirmés dans les ventes, les lignes de vente, les recettes, les ingrédients, les achats et les requêtes clients/fournisseurs.
+* Identifier les composants et services réellement utilisés.
 
-Pour chaque table de lignes, choisis une stratégie d’identifiants cohérente : soit une clé générée par PostgreSQL sans identifiant transmis par l’application, soit un identifiant applicatif correspondant exactement au type SQL choisi.
+### AUD-002 — Vérifier les documents existants
 
-Élimine les insertions mélangeant UUID, identifiants texte et colonnes `BIGSERIAL`.
+* Lire les audits techniques disponibles.
 
-Vérifie les relations :
+* Lire le modèle de données.
 
-- Produit et boutique.
+* Lire la liste des tâches précédentes.
 
-- Matière première et fournisseur.
+* Comparer les déclarations « terminé » au code actuel.
 
-- Recette et ingrédients.
+* Marquer les informations historiques qui ne sont plus vérifiées.
 
-- Ordre de fabrication et recette.
+* Établir une source de vérité documentaire.
 
-- Vente et lignes de vente.
+### AUD-003 — Établir une référence de qualité
 
-- Achat et lignes d’achat.
+* Installer les dépendances à partir du lockfile.
 
-- Mouvement de stock et matière première.
+* Exécuter le contrôle TypeScript.
 
-- Client et opérations sur crédit.
+* Exécuter les tests existants.
 
-- Entreprise, boutiques et utilisateurs.
+* Exécuter le build frontend.
 
-Ajoute les clés étrangères, contraintes et index réellement nécessaires.
+* Identifier les erreurs avant correction.
 
-Utilise des requêtes paramétrées.
+* Examiner les tests désactivés, ignorés ou fragiles.
 
-## 6.2. Adopter un système de migrations versionnées
+* Documenter les commandes impossibles à exécuter et leurs causes.
 
-Ne fais pas de `schema.sql` l’unique mécanisme d’évolution de la base.
+Ne modifie pas le code uniquement pour faire passer artificiellement les tests.
 
-Mets en place un système de migrations ordonnées, avec historique des migrations appliquées, transaction lorsque la migration le permet et mécanisme d’échec explicite.
+### AUD-004 — Construire la cartographie technique
 
-Les migrations doivent être reproductibles dans un environnement neuf et contrôlées avant application sur des données existantes.
+* Cartographier les écrans frontend.
 
-Maintiens une méthode fiable d’initialisation de la base.
+* Cartographier les appels API.
 
-Documente :
+* Cartographier les routes backend.
 
-- La création d’une base de développement Neon.
+* Cartographier les tables et relations SQL.
 
-- Les variables d’environnement nécessaires.
+* Relier chaque module frontend à ses routes et services.
 
-- L’application des migrations.
+* Identifier les fonctions jamais appelées.
 
-- L’initialisation des données de démonstration.
+* Identifier les données mockées et les données réelles.
 
-- Les sauvegardes et restaurations.
+* Identifier les flux métier incomplets.
 
-- Les opérations requérant une intervention manuelle.
+### Critère de sortie de la phase 0
 
-Ne partage jamais les vraies variables d’environnement.
+La roadmap initiale doit être produite avec :
 
-## 6.3. Isoler les entreprises clientes
+* Un état initial documenté.
 
-L’objectif commercial est un SaaS destiné à plusieurs boulangeries indépendantes.
+* Des risques classés par priorité.
 
-Prévois une entité `organizations` ou un modèle équivalent.
+* Une liste des commandes de validation et de leurs résultats.
 
-Chaque organisation doit posséder ses paramètres et ses données. Ses boutiques et utilisateurs doivent être correctement rattachés.
+* Une liste exhaustive des tâches découvertes à ce stade.
 
-Définis le périmètre de chaque table métier et ajoute les relations nécessaires pour empêcher tout accès transversal entre entreprises.
+* Un plan de correction ordonné.
 
-La session vérifiée doit déterminer l’organisation et les boutiques autorisées.
-
-Ne fais jamais confiance à un `organizationId` fourni librement par le navigateur.
-
-Chaque requête métier doit appliquer le périmètre d’accès approprié.
-
-Évalue l’intérêt de PostgreSQL Row-Level Security en complément des contrôles de l’application, en tenant compte du mode de connexion Neon et du rôle PostgreSQL utilisé.
-
-## 6.4. Normalisation des réponses API
-
-Expose des réponses stables et prévisibles.
-
-Les noms de propriétés JSON doivent correspondre aux contrats TypeScript attendus par le front-end.
-
-Gère correctement les valeurs nulles, les nombres PostgreSQL et les dates.
-
-Utilise des schémas de validation pour vérifier les requêtes entrantes.
-
-Ne te contente pas de caster `req.body` en TypeScript : ce cast ne valide pas les données reçues à l’exécution.
+Ne passe pas directement à des améliorations visuelles avant d'avoir identifié les risques P0.
 
 ---
 
-# 7. PHASE 3 — TRANSACTIONS MÉTIER ET SERVICES BACKEND
+# 6. PHASE 1 — SÉCURISATION IMMÉDIATE
 
-Les opérations qui modifient simultanément plusieurs tables doivent être atomiques lorsque cela est nécessaire.
+**Objectif :** éliminer les risques critiques avant toute mise en production.
 
-Une vente ne doit pas exister sans ses lignes si celles-ci sont obligatoires. Une réception ne doit pas augmenter les stocks sans enregistrer son mouvement. Une dépense ne doit pas être enregistrée à moitié.
+### SEC-001 — Secrets et fichiers d'environnement — P0
 
-Utilise les services métier pour centraliser les règles de gestion.
+* Vérifier le fichier `.env` suivi par Git sans afficher ses valeurs sensibles.
 
-Ne duplique pas la logique critique dans React.
+* Déterminer quels secrets ont été publiés et s'ils sont encore actifs.
 
-## 7.1. Caisse et ventes
+* Renouveler ou révoquer les secrets actifs potentiellement exposés.
 
-Implémente un parcours complet :
+* Retirer `.env` du suivi Git.
 
-1. Sélection des produits.
+* Mettre à jour `.gitignore`.
 
-2. Validation des quantités.
+* Vérifier que `.env.example` ne contient aucune valeur secrète réelle.
 
-3. Contrôle des prix et des remises.
+* Examiner l'historique Git afin d'identifier l'étendue de l'exposition.
 
-4. Calcul serveur des montants.
+* Prévoir un nettoyage de l'historique si nécessaire, sans l'imposer aveuglément ni détruire le travail collaboratif.
 
-5. Vérification du mode de paiement.
+* Ajouter un contrôle automatisé de détection des secrets.
 
-6. Vérification du stock disponible.
+**Critère d'acceptation :** les secrets ne sont plus utilisés depuis le dépôt, les éventuelles expositions actives ont été traitées et les nouveaux secrets sont configurés en dehors du code source.
 
-7. Enregistrement du ticket et des lignes.
+### SEC-002 — Configuration de production — P0
 
-8. Décrémentation cohérente des stocks.
+* Examiner `server/config.ts`.
 
-9. Enregistrement des mouvements de stock correspondants.
+* Éliminer les secrets de secours faibles en production.
 
-10. Enregistrement des règlements et mouvements de caisse nécessaires.
+* Valider les variables obligatoires au démarrage.
 
-11. Mise à jour du crédit client et de la fidélité si applicable.
+* Distinguer clairement les configurations de développement, test et production.
 
-12. Retour d’un ticket confirmé à l’interface.
+* Refuser les configurations de production incomplètes.
 
-Le serveur doit recalculer les totaux et ne pas accepter aveuglément les montants envoyés par le navigateur.
+* Vérifier que les erreurs n'exposent pas les secrets ni les détails internes.
 
-Les prix personnalisés et les remises exceptionnelles doivent être autorisés par rôle et journalisés.
+### SEC-003 — Mode démo — P0
 
-Verrouille les lignes de stock pertinentes pendant les transactions concurrentes et refuse une vente qui conduirait à un stock négatif.
+* Identifier tous les chemins d'activation du mode démo.
 
-Ne masque pas une insuffisance de stock en ramenant artificiellement le résultat à zéro.
+* Vérifier les utilisateurs de démonstration codés en dur.
 
-## 7.2. Numérotation des tickets
+* Empêcher leur activation en production.
 
-Ne génère pas les numéros de tickets uniquement à partir de `Date.now()` ou du nombre de ventes chargé dans le navigateur.
+* Empêcher les permissions globales fictives en environnement réel.
 
-Utilise un mécanisme fiable côté base de données, compatible avec les opérations concurrentes, accompagné des contraintes d’unicité nécessaires.
+* Séparer strictement l'identité de démonstration de l'authentification réelle.
 
-Prévoyez une traçabilité des tickets annulés et des corrections.
+* Ajouter un test démontrant qu'un visiteur non authentifié n'accède pas au compte gérant réel.
 
-Ne supprime pas silencieusement une vente validée : implémente une procédure d’annulation ou de remboursement avec motif, autorisation et journal d’audit.
+### SEC-004 — Fallback automatique vers mockDb — P0
 
-La conformité réglementaire du système de facturation devra être validée séparément avant de la revendiquer.
+* Examiner `server/db.ts`.
 
-## 7.3. Gestion de caisse
+* Vérifier le comportement lorsque Neon est indisponible.
 
-Prévois :
+* Interdire la bascule silencieuse vers les données fictives en production.
 
-- Ouverture de caisse avec fonds initial.
+* Prévoir des erreurs explicites et une signalisation de disponibilité.
 
-- Encaissements par mode de paiement.
+* Tester la panne de la base de données.
 
-- Dépenses et sorties autorisées.
+* Vérifier qu'aucune vente n'est présentée comme enregistrée si la base n'a pas confirmé la persistance.
 
-- Règlements clients.
+### SEC-005 — Authentification et stockage des jetons — P0
 
-- Paiements fournisseurs.
+* Cartographier tous les mécanismes d'authentification.
 
-- Clôture par caissier.
+* Identifier les conflits entre cookies HttpOnly et tokens dans `localStorage`.
 
-- Solde théorique.
+* Définir une stratégie cohérente pour les sessions.
 
-- Solde compté.
+* Vérifier les options `HttpOnly`, `Secure`, `SameSite`, les durées et chemins.
 
-- Écart de caisse.
+* Évaluer les protections CSRF adaptées au mécanisme choisi.
 
-- Justification des écarts.
+* Vérifier les expirations et révocations.
 
-- Historique non destructif des opérations.
+* Vérifier le comportement après actualisation de la page.
 
-Les mouvements comptables et financiers doivent pouvoir être rapprochés des opérations sources.
+* Vérifier le comportement après changement de mot de passe et déconnexion.
 
-La clôture ne doit pas dépendre uniquement d’une somme calculée dans l’interface.
+* Éviter les journaux de jetons et de données d'authentification sensibles.
 
-## 7.4. Achats fournisseurs et réceptions
+### SEC-006 — Protection des routes — P0
 
-Implémente un cycle métier cohérent :
+* Cartographier toutes les routes API.
 
-- Brouillon.
+* Lister explicitement les routes publiques.
 
-- Commandé.
+* Exiger une authentification sur toutes les routes privées.
 
-- Partiellement reçu.
+* Exiger les rôles et permissions appropriés.
 
-- Reçu.
+* Protéger les opérations sensibles côté serveur.
 
-- Annulé selon les règles applicables.
+* Vérifier que les routes SSE et webhooks ne divulguent aucune donnée privée.
 
-La création d’un bon de commande ne doit pas augmenter le stock.
+* Vérifier l'origine et les paramètres CORS.
 
-Lors de la réception, le backend doit vérifier les quantités réellement reçues puis enregistrer, dans une transaction adaptée :
+* Ajouter des tests d'accès anonyme, d'accès interdit et d'accès autorisé.
 
-- Les lignes de réception.
+### Critère de sortie de la phase 1
 
-- Les mouvements entrants.
-
-- L’actualisation des stocks.
-
-- Le coût d’achat constaté.
-
-- La dette fournisseur correspondante.
-
-- L’état du bon de commande.
-
-Une même réception ne doit jamais être comptabilisée deux fois.
-
-Prévois les réceptions partielles et les paiements partiels des factures fournisseurs.
-
-## 7.5. Gestion du crédit client
-
-Les clients professionnels peuvent représenter des hôtels, restaurants, revendeurs et autres acheteurs en gros.
-
-Implémente :
-
-- Plafond de crédit.
-
-- Solde dû.
-
-- Historique des ventes à crédit.
-
-- Historique des règlements.
-
-- Échéances et relances éventuelles.
-
-- Autorisation des dépassements.
-
-- Traçabilité des corrections.
-
-Un règlement doit être enregistré de manière atomique avec la diminution de la créance et le mouvement de trésorerie correspondant.
-
-N’effectue pas deux mises à jour indépendantes qui pourraient laisser les comptes incohérents.
+Aucune tâche P0 de sécurité ne doit rester non résolue sans décision explicite et documentée.
 
 ---
 
-# 8. PHASE 4 — STOCKS, RECETTES ET COÛTS DE REVIENT
+# 7. PHASE 2 — ISOLATION MULTI-TENANT
 
-Cette phase est essentielle à la valeur commerciale du produit.
+**Objectif :** garantir qu'une boulangerie ne puisse jamais accéder aux données d'une autre.
 
-L’ERP doit aider le boulanger à comprendre ses coûts réels et à déterminer la rentabilité de ses produits.
+### TEN-001 — Modèle d'appartenance
 
-## 8.1. Fiches matières premières
+* Examiner les tables `organizations`, `stores`, `users` et les tables métier.
 
-Chaque matière doit posséder, selon le besoin :
+* Vérifier les relations organisation/boutique/utilisateur.
 
-- Code unique.
+* Définir la source de vérité de l'organisation active.
 
-- Libellé.
+* Vérifier le rattachement des données historiques.
 
-- Catégorie.
+* Détecter les lignes orphelines ou les associations incohérentes.
 
-- Unité de stockage.
+* Prévoir les migrations nécessaires avec une stratégie compatible avec les données existantes.
 
-- Stock disponible.
+### TEN-002 — Filtrage des lectures
 
-- Seuil d’alerte.
+* Vérifier les requêtes `SELECT` de toutes les routes et services.
 
-- Coût d’achat.
+* Vérifier les listes.
 
-- Fournisseur.
+* Vérifier les vues détaillées.
 
-- Lot.
+* Vérifier les historiques.
 
-- Date de péremption.
+* Vérifier les tableaux de bord.
 
-- Emplacement.
+* Vérifier les rapports et exports.
 
-- Historique des mouvements.
+* Vérifier les jointures entre entités.
 
-La modification directe du stock via un CRUD générique ne doit pas permettre de contourner la traçabilité.
+* Supprimer les identifiants de boutique codés en dur.
 
-Tout ajustement doit passer par un service contrôlant le stock, enregistrant le mouvement et préservant l’historique.
+* Éliminer les fallbacks qui masquent une organisation absente.
 
-## 8.2. Unités et conversions
+### TEN-003 — Filtrage des écritures
 
-Définis une convention explicite pour les unités de recette et de stockage.
+* Vérifier toutes les créations.
 
-Exemples :
+* Vérifier toutes les modifications.
 
-- kg et g.
+* Vérifier toutes les suppressions.
 
-- L et ml.
+* Vérifier les changements de statut.
 
-- Unités individuelles.
+* Vérifier les opérations d'administration.
 
-- Sacs de farine, avec conversion explicite vers l’unité de stock.
+* Dériver les identifiants d'organisation de la session autorisée lorsque cela est approprié.
 
-Évite les calculs mélangeant directement grammes et kilogrammes.
+* Contrôler chaque ressource associée pour prévenir les relations inter-organisations.
 
-Les conversions doivent être centralisées, testées et appliquées de façon cohérente.
+### TEN-004 — Contraintes en base de données
 
-## 8.3. Calcul réel du coût des recettes
+* Examiner les clés étrangères.
 
-Chaque recette doit enregistrer :
+* Vérifier les contraintes uniques.
 
-- Produit fabriqué.
+* Vérifier les références entre organisations.
 
-- Rendement réel attendu par lot de recette.
+* Vérifier les index composés nécessaires.
 
-- Ingrédients.
+* Évaluer les contraintes PostgreSQL pouvant renforcer l'isolation.
 
-- Quantité de chaque ingrédient.
+* Vérifier les stratégies de suppression.
 
-- Unité.
+* Éviter les cascades destructrices sur les documents financiers.
 
-- Coût unitaire utilisé.
+### TEN-005 — Tests croisés obligatoires
 
-- Coût des ingrédients.
+Créer au minimum deux organisations de test.
 
-- Coût total de la recette.
+* Tester la lecture des produits d'une autre organisation.
 
-- Coût par unité produite.
+* Tester la modification d'un produit étranger.
 
-Définis clairement si les quantités des ingrédients sont exprimées pour un lot complet ou pour une unité de produit.
+* Tester sa suppression.
 
-Le calcul doit tenir compte du rendement de la recette.
+* Tester l'accès aux ventes d'une autre organisation.
 
-Par exemple, si une recette utilise 5 kg de farine pour produire 100 pains, la consommation pour 20 pains doit être proportionnelle au rendement, après prise en compte des éventuelles règles de conversion et de pertes.
+* Tester les recettes et leurs ingrédients.
 
-Ne multiplie pas indistinctement les quantités d’ingrédients par le nombre de produits si le rendement de la recette n’a pas été pris en compte.
+* Tester les fournisseurs et achats.
 
-## 8.4. Coûts indirects et rentabilité
+* Tester les stocks et transferts.
 
-Prépare une architecture permettant d’ajouter des coûts configurables :
+* Tester les rapports et exports.
 
-- Électricité ou combustible.
+* Tester les identifiants de boutiques envoyés artificiellement.
 
-- Main-d’œuvre.
+* Tester les utilisateurs ayant plusieurs appartenances, si ce scénario est supporté.
 
-- Emballages.
-
-- Pertes de production.
-
-- Autres charges de fabrication.
-
-Ne prétends pas calculer un coût de revient complet si seules les matières premières sont prises en compte.
-
-Distingue explicitement :
-
-- Coût matière.
-
-- Coût de fabrication.
-
-- Coût de revient estimé.
-
-- Prix de vente.
-
-- Marge brute.
-
-- Marge après charges retenues.
-
-- Résultat estimé.
-
-Le résultat affiché doit correspondre aux données réellement disponibles et à une formule documentée.
-
-Conserve les coûts historiques nécessaires pour comprendre la marge d’une vente passée même lorsque le prix d’achat des matières augmente.
-
-## 8.5. Production
-
-Implémente le flux :
-
-**Planifiée → Préparation → En cours → Contrôle → Terminée**, avec les transitions réellement utiles et des annulations contrôlées.
-
-À chaque transition :
-
-- Vérifie les droits de l’utilisateur.
-
-- Contrôle les quantités.
-
-- Vérifie les matières nécessaires.
-
-- Empêche les doubles consommations.
-
-- Enregistre les mouvements de stock.
-
-- Conserve les quantités prévues et réelles.
-
-- Enregistre les pertes.
-
-- Met à jour le stock de produits finis une seule fois au moment métier approprié.
-
-Choisis explicitement le moment où les matières sont réservées puis consommées, par exemple au démarrage effectif de la production. Une simple création d’ordre ne doit pas provoquer une consommation incontrôlée.
-
-Le calcul des matières consommées doit être proportionnel au rendement de la recette et à la quantité réellement produite, selon une politique documentée.
-
-## 8.6. Lots et péremption
-
-Vérifie les lots de matières premières avant leur consommation et applique une politique de rotation documentée, par exemple FEFO lorsque la date de péremption est connue.
-
-Conserve la traçabilité des lots et prévois un blocage des lots périmés ou non conformes selon les règles retenues.
-
-Toute alerte doit s’appuyer sur les données réellement enregistrées.
+**Critère d'acceptation :** un utilisateur d'une organisation A ne peut pas lire, modifier ou supprimer les données d'une organisation B, même en connaissant les identifiants exacts des ressources.
 
 ---
 
-# 9. PHASE 5 — COMMANDES, PERTES ET AUTRES MODULES
+# 8. PHASE 3 — COHÉRENCE DU MODÈLE DE DONNÉES
 
-Finalise les fonctionnalités déjà annoncées par l’application.
+**Objectif :** éliminer les incohérences entre SQL, services, migrations et types TypeScript.
 
-### Produits finis
+### DB-001 — Schéma SQL
 
-CRUD complet, catégories, prix, coût, code-barres, statut actif, seuil de stock et rattachement aux recettes.
+* Comparer `server/schema.sql` aux migrations appliquées.
 
-### Fournisseurs
+* Identifier les différences de colonnes, de types et de contraintes.
 
-CRUD complet, coordonnées, conditions de règlement, matières fournies, historique des achats, factures et solde fournisseur.
+* Vérifier toutes les clés primaires.
 
-### Clients
+* Vérifier les clés étrangères.
 
-CRUD complet, coordonnées, catégories, historique, fidélité et crédit.
+* Vérifier les champs utilisés dans les requêtes.
 
-### Pertes et invendus
+* Vérifier les champs de traçabilité.
 
-Une perte doit :
+* Vérifier les champs tenant.
 
-- Avoir un motif.
+* Vérifier les index et contraintes d'unicité.
 
-- Posséder une quantité et une valorisation.
+* Corriger les incohérences de façon progressive.
 
-- Être liée au bon produit ou à la bonne matière.
+### DB-002 — Migrations
 
-- Déclencher le mouvement de stock approprié.
+* Vérifier l'ordre des migrations.
 
-- Être enregistrée avec l’utilisateur et la boutique.
+* Vérifier qu'elles sont reproductibles.
 
-- Être modifiable uniquement selon des règles contrôlées.
+* Tester leur application sur une base vide.
 
-- Rester traçable après correction.
+* Tester leur application sur une base de test contenant des données.
 
-Évite de diminuer un stock dans une route et d’enregistrer la perte dans une autre opération indépendante.
+* Vérifier leur gestion des erreurs.
 
-### Commandes spéciales et gâteaux
+* Vérifier le registre des migrations exécutées.
 
-Implémente un cycle de commande, acompte, solde restant, date de retrait, statut de fabrication et livraison ou retrait.
+* Documenter les procédures de récupération.
 
-Le calcul du solde doit être cohérent et validé côté serveur.
+* Interdire les modifications destructrices non validées.
 
-### Tableau de bord
+### DB-003 — Identifiants et références
 
-Les indicateurs doivent provenir de données réellement persistées et correspondre à des périodes explicites.
+* Vérifier l'uniformité et la compatibilité des identifiants.
 
-Prévois des états de chargement, des états vides et des erreurs lisibles.
+* Vérifier les types des clés parentes et enfants.
 
-Ne remplace pas une statistique manquante par une valeur de démonstration.
+* Vérifier la génération des identifiants.
 
----
+* Ajouter les contraintes d'unicité métier requises.
 
-# 10. PHASE 6 — INTERFACE REACT ET EXPÉRIENCE UTILISATEUR
+* Vérifier les numéros de tickets et de commandes en situation concurrente.
 
-Conserve l’identité visuelle existante et concentre la refonte sur la fiabilité fonctionnelle.
+Ne change pas tous les identifiants d'un seul coup sans plan de migration testé.
 
-N’engage pas une migration générale vers Next.js, Shadcn/ui ou ReUI durant ce chantier sans justification concrète. Une évolution du design system est distincte de la correction du socle métier.
+### DB-004 — Transactions
 
-Pour chaque module :
+* Auditer le fonctionnement de `transaction()` dans `server/db.ts`.
 
-- Connecter les actions à la véritable API.
+* Déterminer les opérations qui exigent une atomicité.
 
-- Valider les formulaires avant envoi.
+* Vérifier les chemins de commit et rollback.
 
-- Afficher les états de chargement.
+* Vérifier le comportement lorsque Neon échoue.
 
-- Désactiver les actions pendant les soumissions appropriées.
+* Tester les erreurs au milieu d'une opération multi-tables.
 
-- Afficher les erreurs du serveur.
+* Vérifier les mises à jour concurrentes.
 
-- Présenter des confirmations pour les actions sensibles.
-
-- Empêcher les doubles soumissions.
-
-- Actualiser les données après succès confirmé.
-
-- Préserver le contexte de navigation.
-
-- Respecter les permissions.
-
-- Prévoir un affichage responsive et des zones tactiles adaptées aux terminaux de caisse.
-
-Utilise `BakeryContext` de façon transitoire si nécessaire, mais évite que le même état métier existe durablement dans plusieurs endroits sans stratégie de synchronisation claire.
-
-Centralise les appels réseau.
-
-Tu peux adopter une bibliothèque de gestion de l’état serveur, telle que TanStack Query, si cela simplifie de manière démontrable le cache, le chargement et l’invalidation des données. Évite cependant une migration massive sans valeur mesurable.
-
-## Source de vérité
-
-Pour les données métier, PostgreSQL via l’API est la source de vérité.
-
-Le stockage local ne doit pas permettre à l’application de prétendre qu’une donnée est enregistrée en base alors qu’elle ne l’est pas.
-
-Les données de démonstration et le stockage local doivent être clairement séparés des données réelles.
+**Critère d'acceptation :** les migrations et les relations sont cohérentes et les opérations multi-tables critiques échouent sans laisser d'état partiel interdit.
 
 ---
 
-# 11. PHASE 7 — MODE HORS LIGNE ET PWA
+# 9. PHASE 4 — FIABILITÉ DES VENTES ET DE LA CAISSE
 
-Examine et unifie `offlineQueue.ts` et `syncQueue.ts`.
+**Objectif :** garantir l'exactitude des ventes, des paiements et des encaissements.
 
-Ne maintiens pas deux mécanismes concurrents sans besoin clairement documenté.
+### SALE-001 — Validation des ventes
 
-Pour le mode hors ligne :
+* Valider le contenu des requêtes.
 
-- Choisis une file de synchronisation unique.
+* Recalculer les totaux côté serveur.
 
-- Persiste les opérations en attente dans un stockage adapté.
+* Vérifier les prix depuis les données autorisées.
 
-- Attribue une clé d’idempotence à chaque opération qui peut être rejouée.
+* Vérifier les quantités.
 
-- Préserve l’ordre lorsque cela est nécessaire.
+* Vérifier les remises.
 
-- Évite de stocker des jetons et secrets dans les opérations.
+* Vérifier la politique fiscale appliquée.
 
-- Affiche les états en attente, synchronisé et en échec.
+* Vérifier les moyens de paiement.
 
-- Ne supprime pas silencieusement une opération échouée.
+* Vérifier les paiements partiels et le rendu de monnaie.
 
-- Prévois une inspection et une reprise contrôlée des opérations en échec.
+* Vérifier l'association des clients et boutiques.
 
-- Assure la traçabilité des conflits.
+### SALE-002 — Intégrité du stock vendu
 
-Ne mets pas en cache les réponses privées de l’API de manière générale.
+* Vérifier le stock disponible.
 
-Limite le cache PWA aux ressources statiques, sauf politique explicite démontrée sûre.
+* Définir la politique de vente en rupture.
 
-Le mode hors ligne de la caisse ne doit être déclaré fiable qu’après des tests de persistance, de reprise, d’idempotence et de conflit entre appareils.
+* Empêcher les incohérences dues aux ventes concurrentes.
 
-Si les écritures financières hors ligne ne peuvent pas être garanties, désactive-les proprement ou indique clairement leur limitation au lieu de simuler une synchronisation réussie.
+* Créer des mouvements de stock traçables.
+
+* Regrouper les effets critiques de la vente dans une transaction.
+
+* Tester l'échec d'un mouvement après création des lignes de vente.
+
+### SALE-003 — Numérotation et idempotence
+
+* Vérifier l'unicité des tickets.
+
+* Remplacer les identifiants temporels insuffisants par une stratégie robuste.
+
+* Protéger les requêtes répétées.
+
+* Tester les doubles clics.
+
+* Tester les nouvelles tentatives après délai réseau.
+
+* Empêcher la duplication des ventes.
+
+### CASH-001 — Sessions de caisse
+
+* Vérifier l'ouverture de caisse.
+
+* Vérifier le fond de caisse.
+
+* Vérifier les mouvements entrants et sortants.
+
+* Vérifier les encaissements associés aux ventes.
+
+* Vérifier la clôture.
+
+* Vérifier les écarts entre caisse théorique et comptage réel.
+
+* Interdire les modifications ordinaires d'une session clôturée.
+
+* Tracer les opérations correctives.
+
+### CASH-002 — Retours et annulations
+
+* Prévoir des opérations de contrepassation.
+
+* Conserver les ventes finalisées et leur historique.
+
+* Gérer les remboursements.
+
+* Ajuster le stock selon le retour réel.
+
+* Traiter les remboursements partiels.
+
+* Tracer l'utilisateur et le motif.
+
+* Tester les permissions.
+
+### CASH-003 — Rapports de caisse
+
+* Vérifier les totaux par moyen de paiement.
+
+* Distinguer ventes, paiements et encaissements.
+
+* Vérifier les ventes à crédit.
+
+* Vérifier les remboursements.
+
+* Comparer les totaux avec les écritures sources.
 
 ---
 
-# 12. PHASE 8 — SPÉCIFICITÉS DU MARCHÉ IVOIRIEN
+# 10. PHASE 5 — ACHATS, FOURNISSEURS ET INVENTAIRE
 
-L’application doit fonctionner dans un contexte d’exploitation ivoirien sans imposer des hypothèses fiscales ou économiques non vérifiées.
+**Objectif :** assurer une gestion fiable des approvisionnements et des stocks.
 
-Prévois :
+### PUR-001 — Workflow d'achat
 
-- Devise XOF / FCFA.
+* Séparer commande, réception et facture fournisseur.
 
-- Interface francophone.
+* Empêcher l'augmentation du stock à la simple création d'un bon de commande.
 
-- Formats locaux de dates et montants.
+* Gérer les réceptions partielles.
 
-- Quantités décimales appropriées pour les matières premières.
+* Gérer les quantités manquantes.
 
-- Suivi des prix d’achat en FCFA.
+* Gérer les écarts de prix.
 
-- Modes de paiement pertinents : espèces, Wave, Orange Money et MTN Mobile Money.
+* Enregistrer les mouvements de stock lors de la réception validée.
 
-- Gestion des ventes au comptant et à crédit.
+* Empêcher la double réception.
 
-- Gestion de plusieurs boutiques.
+* Vérifier les soldes fournisseurs.
 
-- Fonctionnement adapté aux appareils mobiles utilisés en caisse et en magasin.
+* Vérifier l'isolation organisationnelle de toutes les opérations.
 
-Les taux de taxe, règles de facturation, numérotations réglementaires et paramètres fiscaux doivent être configurables et datés lorsque nécessaire.
+### STK-001 — Source de vérité du stock
 
-N’inscris pas un taux fiscal supposé en dur dans le code.
+* Définir le modèle de stock disponible.
 
-Ne déclare pas l’ERP conforme aux obligations fiscales ivoiriennes sans vérification documentée des règles en vigueur et validation appropriée.
+* Distinguer stock physique et stock réservé.
 
-## Intégrations Mobile Money
+* Relier chaque mouvement à son document source.
 
-Distingue clairement :
+* Prévenir les stocks négatifs non autorisés.
 
-- Paiement manuel enregistré par un utilisateur autorisé.
+* Définir la valorisation du stock.
 
-- Paiement initié par une véritable API de paiement.
+* Contrôler les quantités et unités.
 
-- Paiement en attente.
+* Vérifier l'historique des corrections.
 
-- Paiement confirmé.
+### STK-002 — Inventaires et transferts
 
-- Paiement échoué.
+* Créer un inventaire.
 
-- Paiement annulé ou remboursé.
+* Enregistrer les quantités comptées.
 
-Ne marque pas un paiement comme confirmé sur la seule base d’un retour du navigateur.
+* Calculer les écarts.
 
-Pour les webhooks, vérifie la signature suivant la documentation officielle du fournisseur retenu. N’invente pas un algorithme de signature.
+* Autoriser et tracer les ajustements.
 
-Ne considère pas une configuration fictive ou une clé absente comme une intégration de production fonctionnelle.
+* Gérer les transferts inter-boutiques.
+
+* Empêcher une sortie sans entrée correspondante.
+
+* Vérifier les inventaires concurrents.
+
+* Produire un rapport de rapprochement.
+
+### STK-003 — Péremption et lots
+
+* Vérifier les besoins de traçabilité.
+
+* Implémenter les lots lorsque nécessaires.
+
+* Enregistrer les dates pertinentes.
+
+* Définir la stratégie FIFO ou FEFO retenue.
+
+* Ajouter des alertes de péremption si le module est actif.
 
 ---
 
-# 13. PHASE 9 — STRATÉGIE DE TESTS
+# 11. PHASE 6 — RECETTES, COÛTS ET PRODUCTION
 
-Ajoute des tests automatisés adaptés à l’architecture existante.
+**Objectif :** garantir que les ordres de fabrication reflètent les opérations réelles.
 
-Choisis des versions compatibles avec le projet et limite les nouvelles dépendances au strict nécessaire.
+### PROD-001 — Recettes
 
-Prévois :
+* Vérifier la cohérence des produits et recettes associés.
 
-- Tests unitaires.
+* Vérifier les quantités et unités.
 
-- Tests de services métier.
+* Vérifier les conversions.
 
-- Tests d’intégration API.
+* Historiser les versions des recettes.
 
-- Tests SQL sur une base de test.
+* Calculer les besoins en ingrédients.
 
-- Tests de permissions.
+* Conserver les paramètres utilisés pour les productions historiques.
 
-- Tests des transactions.
+### PROD-002 — Ordres de fabrication
 
-- Tests de régression sur les opérations corrigées.
+* Définir les statuts autorisés.
 
-Ajoute les scripts nécessaires dans `package.json`, notamment pour les tests et le contrôle TypeScript, en conservant les scripts existants utiles.
+* Distinguer création, lancement et finalisation.
 
-## Scénarios obligatoires
+* Vérifier les stocks disponibles.
 
-### Authentification
+* Prévoir une réservation de matières si nécessaire.
 
-- Connexion valide.
+* Enregistrer la consommation réelle.
 
-- Mot de passe incorrect.
+* Enregistrer les produits finis obtenus.
 
-- Session expirée.
+* Enregistrer les pertes.
 
-- Absence de session.
+* Relier tous les effets aux mouvements de stock.
 
-- Compte désactivé.
+* Empêcher la finalisation multiple.
 
-- Accès interdit par rôle.
+* Protéger les opérations contre les accès inter-organisations.
 
-- Aucun accès automatique à la démo après erreur.
+### PROD-003 — Coût de revient
 
-### Isolation multi-entreprises
+* Vérifier les prix d'achat réels.
 
-- Une entreprise ne voit pas les clients d’une autre.
+* Calculer le coût matière par lot.
 
-- Une entreprise ne peut pas modifier ses stocks en utilisant l’identifiant d’une autre.
+* Calculer le coût matière par unité.
 
-- Un utilisateur ne peut pas changer son rôle en modifiant le payload.
+* Distinguer coût estimé et coût réel.
 
-- Une boutique non autorisée ne peut pas être utilisée par simple modification de requête.
+* Prendre en compte le rendement réellement obtenu.
 
-### Ventes
+* Définir les coûts complémentaires retenus.
 
-- Vente valide.
+* Distinguer taux de marge et taux de marque.
 
-- Vente de plusieurs produits.
+* Tester les formules avec des jeux de données connus.
 
-- Quantité invalide.
+### PROD-004 — Pertes et invendus
 
-- Produit inactif.
+* Enregistrer les quantités perdues.
 
-- Stock insuffisant.
+* Distinguer pertes de production et invendus commerciaux.
 
-- Prix modifié frauduleusement dans le navigateur.
+* Définir les motifs.
 
-- Remise non autorisée.
+* Enregistrer l'impact sur le stock.
 
-- Échec SQL avec rollback complet.
+* Calculer le coût des pertes selon une règle documentée.
 
-- Deux ventes concurrentes portant sur un stock limité.
-
-- Idempotence d’une opération rejouée.
-
-- Numéros de tickets uniques.
-
-### Achats et stocks
-
-- Création d’une commande sans entrée immédiate en stock.
-
-- Réception complète.
-
-- Réception partielle.
-
-- Double réception.
-
-- Achat annulé.
-
-- Paiement fournisseur partiel.
-
-- Ajustement de stock journalisé.
-
-- Impossibilité d’obtenir un stock négatif par une opération normale.
-
-### Recettes et production
-
-- Création d’une recette avec ingrédients.
-
-- Modification et suppression contrôlées.
-
-- Calcul du coût matière.
-
-- Conversion des unités.
-
-- Rendement et quantité produite.
-
-- Consommation réelle des ingrédients.
-
-- Stock insuffisant.
-
-- Prévention des consommations doubles.
-
-- Pertes et stock de produits finis cohérents.
-
-### Persistance
-
-Pour chaque CRUD critique, vérifie :
-
-1. L’opération réussit.
-
-2. La donnée est présente dans PostgreSQL.
-
-3. La page actualisée retrouve cette donnée depuis l’API.
-
-4. Une erreur backend ne produit pas de succès fictif.
-
-5. Un second utilisateur autorisé voit les mêmes données persistées.
-
-Exécute les tests, le contrôle TypeScript et le build de production.
-
-Corrige les échecs introduits ou révélés par les modifications.
-
-Ne masque pas un échec de test pour faire apparaître un résultat positif.
-
-Si un test exige un service externe ou une base indisponible, distingue explicitement le test non exécuté du test réussi.
+* Produire des rapports explicables.
 
 ---
 
-# 14. PHASE 10 — CONFIGURATION ET DÉPLOIEMENT
+# 12. PHASE 7 — AUTHENTIFICATION ET ADMINISTRATION
 
-Vérifie l’intégralité du parcours de démarrage et de déploiement.
+**Objectif :** offrir une gestion professionnelle des comptes et des droits.
 
-Prépare ou corrige :
+### AUTH-001 — Inscription
 
-- `.env.example`, sans secrets réels.
+* Vérifier le formulaire d'inscription.
 
-- Les scripts de migration.
+* Vérifier l'unicité et la normalisation des e-mails.
 
-- Les scripts de seed.
+* Vérifier le hachage des mots de passe.
 
-- Les scripts de test.
+* Vérifier le workflow de création de l'organisation.
 
-- Le build frontend.
+* Vérifier la création de la boutique initiale si elle est prévue.
 
-- Le démarrage backend.
+* Vérifier l'association de l'utilisateur propriétaire.
 
-- Le service de santé.
+* Vérifier la transaction et son rollback.
 
-- La configuration CORS.
+* Vérifier la vérification de l'e-mail.
 
-- Les variables de production.
+### AUTH-002 — Récupération de compte
 
-- La configuration PWA.
+* Tester la demande de réinitialisation.
 
-- Les éventuelles tâches de sauvegarde.
+* Vérifier les dates d'expiration.
 
-Rends les seeds reproductibles : plusieurs exécutions ne doivent pas créer de nouvelles copies des mêmes boutiques, produits, utilisateurs ou recettes.
+* Vérifier l'usage unique des jetons.
 
-Assure-toi que les identifiants du seed correspondent aux identifiants utilisés dans les relations métier.
+* Vérifier la révocation des sessions.
 
-Le démarrage doit échouer clairement si une configuration essentielle manque, plutôt que de se connecter accidentellement à une base de remplacement ou de présenter des données fictives comme des données réelles.
+* Vérifier les réponses non révélatrices de l'existence d'un compte.
 
-Vérifie l’exposition accidentelle de secrets dans les fichiers suivis par Git.
+* Tester les erreurs SMTP.
 
-Si un véritable secret a été exposé, signale la nécessité de sa rotation. Ne le reproduis pas dans les rapports.
+### AUTH-003 — Permissions
 
----
+* Établir la matrice des rôles.
 
-# 15. CRITÈRES D'ACCEPTATION DE LA VERSION
+* Protéger les fonctions sensibles.
 
-Le chantier ne peut être considéré comme terminé que si les conditions applicables suivantes sont satisfaites.
+* Vérifier les permissions côté serveur.
 
-## Sécurité
+* Vérifier les changements de rôle.
 
-- Aucune session gérant automatique en production.
+* Vérifier la désactivation des comptes.
 
-- Aucun contournement de connexion en production.
+* Tester chaque permission importante.
 
-- Un système d’authentification cohérent.
+### AUTH-004 — Utilisateurs de l'organisation
 
-- Toutes les routes privées correctement protégées.
+* Vérifier les invitations.
 
-- Permissions contrôlées côté serveur.
+* Vérifier l'affectation aux boutiques.
 
-- Données isolées entre entreprises et boutiques.
+* Vérifier la modification des rôles.
 
-- Aucune fuite de secret identifiée dans les fichiers livrés.
+* Vérifier la désactivation.
 
-## Données et backend
+* Prévenir la suppression du dernier propriétaire actif.
 
-- Les migrations de la base sont documentées.
-
-- Les incompatibilités SQL identifiées sont corrigées.
-
-- Les opérations multi-tables utilisent les transactions appropriées.
-
-- Les données métier sont réellement persistées.
-
-- Les stocks et les mouvements restent cohérents.
-
-- Les opérations échouées ne modifient pas partiellement les données.
-
-- Les seeds sont reproductibles.
-
-## Métier
-
-- Une vente est calculée et confirmée côté serveur.
-
-- Les achats et les réceptions ont des effets distincts.
-
-- La production applique le rendement des recettes.
-
-- Les coûts de revient reposent sur des unités cohérentes.
-
-- Les opérations de trésorerie sont traçables.
-
-- Les dettes clients et fournisseurs sont rapprochables.
-
-- Les annulations et corrections sensibles restent auditables.
-
-## Qualité logicielle
-
-- Les tests pertinents existent et ont été exécutés.
-
-- Le contrôle TypeScript passe.
-
-- Le build de production passe.
-
-- Les régressions découvertes sont corrigées.
-
-- Les erreurs restantes sont listées et expliquées.
-
-- Les étapes de configuration et de lancement sont documentées.
-
-Ne confonds pas la réussite du build avec la preuve que toutes les fonctionnalités métier fonctionnent.
+* Tracer les actions administratives.
 
 ---
 
-# 16. LIVRABLES ATTENDUS
+# 13. PHASE 8 — CRUD, API ET SYNCHRONISATION FRONTEND
 
-Au terme du chantier, fournis :
+**Objectif :** faire correspondre systématiquement les actions de l'interface aux données réellement persistées.
 
-1. Le code réellement corrigé et implémenté.
+### API-001 — Contrat API
 
-2. Les migrations SQL nécessaires.
+* Cartographier chaque appel du frontend.
 
-3. Les tests ajoutés.
+* Comparer les chemins et verbes HTTP avec les routes backend.
 
-4. Les fichiers de configuration et scripts corrigés.
+* Corriger les routes inexistantes ou incohérentes.
 
-5. `docs/TECHNICAL_AUDIT.md`.
+* Normaliser les réponses.
 
-6. `docs/IMPLEMENTATION_PLAN.md`, actualisé avec l’état réel d’avancement.
+* Uniformiser les erreurs.
 
-7. `docs/DATA_MODEL.md`.
+* Vérifier les codes HTTP.
 
-8. `docs/SECURITY.md`.
+* Ajouter les validations d'entrée.
 
-9. Une documentation de lancement local et de déploiement.
+* Documenter les routes et leurs permissions.
 
-10. Un compte rendu final des corrections.
+### API-002 — CRUD complet
 
-Le compte rendu doit inclure :
+Pour chaque module, vérifier :
 
-- Fichiers principaux modifiés.
+* Création persistée.
 
-- Défauts critiques corrigés.
+* Lecture depuis la base.
 
-- Fonctionnalités implémentées.
+* Modification persistée.
 
-- Migrations à appliquer.
+* Suppression ou désactivation selon la règle métier.
 
-- Tests exécutés et résultats réels.
+* Mise à jour des listes.
 
-- Résultat du build.
+* Actualisation de la page sans perte.
 
-- Variables d’environnement encore nécessaires.
+* Gestion des relations.
 
-- Limitations restantes.
+* Gestion des erreurs.
 
-- Fonctionnalités qui exigent un service externe ou une validation métier.
+* Respect des permissions.
 
-- Procédure exacte pour démarrer et vérifier l’application.
+* Respect de l'isolation multi-tenant.
 
-Utilise les statuts :
+Priorité aux produits, matières premières, recettes, fournisseurs, clients, achats, production, ventes, caisse et commandes personnalisées.
 
-- **Terminé et testé**.
+### API-003 — États de l'interface
 
-- **Implémenté, mais non testé dans l’environnement réel**.
+* Ajouter les états de chargement.
 
-- **Partiellement terminé**.
+* Prévenir les doubles soumissions.
 
-- **Bloqué**.
+* Afficher des erreurs compréhensibles.
 
-- **Non implémenté**.
+* Synchroniser les tableaux après mutation.
 
-Ne déclare jamais une fonctionnalité terminée sur la seule base de son existence dans le code.
+* Invalider les caches affectés.
 
----
+* Prévenir les succès visuels non confirmés par le serveur.
 
-# 17. ORDRE D’EXÉCUTION IMPÉRATIF
+* Éliminer les fallbacks qui donnent une fausse impression de persistance.
 
-Respecte cet ordre :
+### API-004 — Pagination
 
-**Lot 0 — Audit et état initial**
+* Vérifier la pagination backend existante.
 
-Inventaire, dépendances, état Git, exécution initiale des contrôles et documentation des problèmes.
+* Connecter la pagination frontend.
 
-**Lot 1 — Sécurité P0**
+* Gérer le tri et les filtres.
 
-Authentification unique, sessions, permissions et protection des routes.
+* Vérifier les limites de taille de page.
 
-**Lot 2 — Schéma PostgreSQL**
+* Ajouter les index utiles.
 
-Migrations, identifiants, colonnes, relations et isolation multi-entreprises.
+* Tester les volumes importants.
 
-**Lot 3 — Transactions métier**
-
-Ventes, caisse, achats, réceptions, stocks, recettes, production, crédits et pertes.
-
-**Lot 4 — Fiabilisation du front-end**
-
-Reconnexion des écrans, suppression des succès fictifs, états de chargement et de synchronisation.
-
-**Lot 5 — Fiabilité des coûts et rapports**
-
-Coûts de revient, marges, indicateurs du tableau de bord et cohérence financière.
-
-**Lot 6 — Tests, PWA et préparation de production**
-
-Tests automatisés, seeds, scripts, documentation et contrôles finaux.
-
-À chaque lot :
-
-1. Inspecte le code concerné.
-
-2. Définis les modifications nécessaires.
-
-3. Implémente les changements.
-
-4. Exécute les tests et contrôles disponibles.
-
-5. Corrige les problèmes.
-
-6. Mets à jour le compte rendu.
-
-7. Passe au lot suivant lorsque les critères du lot sont satisfaits ou que les blocages sont précisément documentés.
-
-Ne t’arrête pas après la production du plan.
-
-Ne demande pas systématiquement une confirmation pour les corrections normales et réversibles du code.
-
-Ne lance toutefois aucune migration destructive, opération irréversible sur une base réelle ou mise en production sans autorisation explicite.
+* Éviter de télécharger tout le catalogue à chaque opération.
 
 ---
 
-# INSTRUCTION FINALE
+# 14. PHASE 9 — MODE HORS LIGNE ET PWA
 
-Ton objectif n’est pas de produire une application qui semble terminée lors d’une démonstration.
+**Objectif :** garantir une reprise fiable lors des coupures de réseau.
 
-Ton objectif est de construire un ERP qui supporte les opérations réelles d’une boulangerie :
+### OFF-001 — Unifier les files
 
-- Acheter les matières premières.
+* Examiner `syncQueue.ts`.
 
-- Contrôler les prix d’achat.
+* Examiner `offlineQueue.ts`.
 
-- Recevoir les marchandises.
+* Identifier les appels réellement utilisés.
 
-- Gérer les stocks.
+* Choisir une seule architecture de file de synchronisation.
 
-- Calculer les recettes et les coûts de fabrication.
+* Éliminer les mécanismes concurrents sans interrompre les opérations en attente.
 
-- Planifier et suivre les fournées.
+* Corriger les chemins API incorrects.
 
-- Vendre et encaisser.
+* Typer les opérations.
 
-- Contrôler la trésorerie.
+### OFF-002 — Intégrité de synchronisation
 
-- Gérer les clients professionnels et leurs crédits.
+* Ajouter un identifiant unique par opération.
 
-- Mesurer les pertes.
+* Ajouter une confirmation serveur.
 
-- Analyser les marges.
+* Rendre les opérations compatibles avec des tentatives répétées.
 
-- Retrouver les opérations passées.
+* Gérer les conflits entre appareils.
 
-- Protéger les données de chaque entreprise.
+* Gérer les erreurs permanentes et temporaires.
 
-Chaque modification doit améliorer de façon vérifiable la sécurité, la fiabilité, la cohérence des données ou l’utilité métier.
+* Ne jamais abandonner silencieusement une vente.
 
-**Commence maintenant par le Lot 0, examine réellement le dépôt, puis exécute les lots dans l’ordre. Le plan est le point de départ du travail, pas son résultat final.**
+* Afficher les opérations en attente et en échec.
 
-## Comment utiliser ce prompt avec ton agent IA
+* Tester les interruptions pendant l'envoi.
 
-Je te recommande de le donner à ton agent en étant connecté au dépôt GitHub et en lui laissant modifier les fichiers du projet, plutôt que de lui demander de simplement générer du code dans une conversation.
+### OFF-003 — PWA
 
-Consigne pratique à ajouter juste après le Master Prompt :
+* Vérifier le manifeste et le service worker.
+
+* Vérifier le cache des ressources.
+
+* Vérifier les stratégies de mise à jour.
+
+* Vérifier les règles de confidentialité des caches.
+
+* Vérifier l'affichage de l'état réseau.
+
+* Tester l'installation sur des appareils cibles.
+
+* Documenter les limites du mode hors ligne.
+
+Le mode hors ligne ne doit pas prétendre fournir une cohérence financière centralisée tant que la synchronisation n'a pas été confirmée par le serveur.
+
+---
+
+# 15. PHASE 10 — RAPPORTS, EXPORTS ET NOTIFICATIONS
+
+**Objectif :** ajouter les fonctions professionnelles une fois la cohérence du cœur validée.
+
+### REP-001 — Rapports
+
+* Vérifier les indicateurs du dashboard.
+
+* Définir les formules métier.
+
+* Distinguer chiffre d'affaires, encaissements et bénéfice estimé.
+
+* Vérifier les filtres par période, boutique et utilisateur.
+
+* Vérifier les droits sur les rapports financiers.
+
+* Comparer les rapports aux données sources.
+
+### REP-002 — Exports
+
+* Export CSV.
+
+* Export des produits.
+
+* Export des stocks.
+
+* Export des ventes.
+
+* Export des achats.
+
+* Export des dépenses.
+
+* Export des rapports de caisse.
+
+* PDF des documents nécessaires.
+
+* Tester les montants et formats.
+
+* Vérifier l'isolation multi-tenant des exports.
+
+### NOT-001 — Notifications
+
+* Définir les événements qui déclenchent les notifications.
+
+* Créer le centre de notifications.
+
+* Ajouter les alertes de stock.
+
+* Ajouter les alertes de commande.
+
+* Ajouter les alertes de production.
+
+* Gérer le statut lu/non lu.
+
+* Vérifier les permissions.
+
+* Éviter les notifications dupliquées.
+
+### NOT-002 — Temps réel
+
+* Évaluer les besoins réels.
+
+* Vérifier l'authentification des connexions SSE.
+
+* Empêcher l'envoi d'événements entre organisations.
+
+* Prévoir les déconnexions et reconnexions.
+
+* Évaluer la compatibilité multi-instance.
+
+* Ajouter WebSocket uniquement si justifié.
+
+---
+
+# 16. PHASE 11 — INTÉGRATIONS
+
+**Objectif :** ajouter des intégrations vérifiées et exploitables.
+
+### INT-001 — Mobile Money
+
+* Vérifier les API et offres officiellement accessibles.
+
+* Identifier les contrats et clés nécessaires.
+
+* Définir les statuts de paiement.
+
+* Implémenter les webhooks avec validation de signature conforme à chaque fournisseur.
+
+* Vérifier les références uniques.
+
+* Protéger contre les notifications répétées.
+
+* Réconcilier paiements et ventes.
+
+* Tester les paiements acceptés, échoués et en attente.
+
+* Ne jamais marquer un paiement comme réglé sur la seule base d'une réponse simulée.
+
+Les intégrations Wave, Orange Money et MTN doivent être marquées « non configurées » jusqu'à la validation réelle de leurs flux.
+
+### INT-002 — Impression
+
+* Vérifier l'impression des tickets.
+
+* Vérifier les formats papier.
+
+* Tester ESC/POS sur les imprimantes compatibles.
+
+* Gérer les erreurs d'impression.
+
+* Ajouter une configuration par poste ou boutique.
+
+### INT-003 — Codes-barres
+
+* Tester les scanners USB/Bluetooth.
+
+* Tester la caméra si prise en charge.
+
+* Gérer les produits inconnus.
+
+* Vérifier la rapidité de recherche.
+
+* Tester le fonctionnement dans le POS.
+
+---
+
+# 17. PHASE 12 — JOURNAL D'AUDIT ET EXPLOITATION
+
+**Objectif :** rendre le logiciel exploitable et maintenable commercialement.
+
+### OPS-001 — Audit métier
+
+* Tracer les connexions importantes.
+
+* Tracer les changements de prix.
+
+* Tracer les mouvements de stock.
+
+* Tracer les annulations de vente.
+
+* Tracer les remboursements.
+
+* Tracer les changements de permissions.
+
+* Tracer les opérations d'administration.
+
+* Protéger l'intégrité des journaux.
+
+* Empêcher l'accès aux journaux des autres organisations.
+
+### OPS-002 — Observabilité
+
+* Structurer les logs serveur.
+
+* Ajouter des identifiants de requête.
+
+* Mesurer les erreurs et latences.
+
+* Ajouter une surveillance de santé.
+
+* Séparer les erreurs techniques des événements métier.
+
+* Supprimer les logs de secrets et de données sensibles.
+
+### OPS-003 — Sauvegarde et restauration
+
+* Documenter la stratégie de sauvegarde Neon.
+
+* Définir les objectifs de reprise.
+
+* Tester la restauration sur un environnement isolé.
+
+* Vérifier la cohérence des données restaurées.
+
+* Définir les responsabilités de maintenance.
+
+* Documenter la procédure en cas d'incident.
+
+* Vérifier la possibilité d'export des données par organisation.
+
+### OPS-004 — Performance
+
+* Mesurer les routes les plus lentes.
+
+* Analyser les requêtes SQL.
+
+* Ajouter les index justifiés.
+
+* Vérifier la pagination.
+
+* Prévenir les requêtes répétitives inutiles.
+
+* Optimiser les volumes importants.
+
+* Évaluer la charge sur plusieurs organisations.
+
+---
+
+# 18. PHASE 13 — PRÉPARATION COMMERCIALE DU SAAS
+
+**Objectif :** permettre la commercialisation auprès de plusieurs boulangeries.
+
+### SaaS-001 — Abonnements
+
+* Définir les plans.
+
+* Définir les quotas.
+
+* Définir les périodes d'essai.
+
+* Gérer les changements de formule.
+
+* Gérer les renouvellements.
+
+* Gérer les expirations.
+
+* Prévoir une période de grâce si la stratégie commerciale le prévoit.
+
+* Protéger l'accès aux données historiques.
+
+* Vérifier les droits premium côté serveur.
+
+### SaaS-002 — Console d'administration SaaS
+
+* Lister les organisations.
+
+* Consulter le statut des abonnements.
+
+* Gérer les plans.
+
+* Consulter l'état technique des comptes.
+
+* Contrôler les quotas.
+
+* Tracer les actions de l'administrateur SaaS.
+
+* Empêcher qu'un administrateur ordinaire accède aux données métier sans autorisation explicite.
+
+### SaaS-003 — Intégration d'une nouvelle boulangerie
+
+* Créer un compte propriétaire.
+
+* Créer une organisation.
+
+* Créer la boutique initiale.
+
+* Configurer les paramètres de base.
+
+* Permettre l'import initial des produits.
+
+* Configurer les rôles.
+
+* Vérifier l'isolation des données.
+
+* Fournir un parcours de démarrage clair.
+
+### SaaS-004 — Conditions de commercialisation
+
+* Vérifier la sécurité.
+
+* Vérifier la persistance.
+
+* Vérifier les sauvegardes.
+
+* Vérifier la restauration.
+
+* Vérifier les conditions d'utilisation et la confidentialité.
+
+* Vérifier les obligations applicables au marché visé.
+
+* Vérifier la procédure de support et de résolution d'incidents.
+
+* Préparer une procédure de migration des données clients.
+
+Ne jamais annoncer une conformité réglementaire sans vérification appropriée.
+
+---
+
+# 19. PHASE 14 — CAMPAGNE QA FINALE
+
+**Objectif :** démontrer que le logiciel fonctionne dans des scénarios réalistes.
+
+### QA-001 — Qualité statique
+
+* Contrôle TypeScript.
+
+* Build frontend.
+
+* Build ou démarrage backend.
+
+* Analyse des erreurs de lint si configurée.
+
+* Vérification des imports et dépendances.
+
+* Vérification des scripts de migration.
+
+### QA-002 — Tests unitaires
+
+* Authentification.
+
+* Permissions.
+
+* Calculs de vente.
+
+* Calculs de coûts.
+
+* Conversions d'unités.
+
+* Stocks.
+
+* Achats.
+
+* Production.
+
+* Caisse.
+
+* Rapports.
+
+### QA-003 — Tests d'intégration
+
+* Base réelle de test.
+
+* CRUD persistant.
+
+* Relations entre tables.
+
+* Transactions et rollback.
+
+* Erreurs réseau.
+
+* Idempotence.
+
+* Isolation tenant.
+
+* Migrations.
+
+### QA-004 — Parcours complet
+
+Exécuter de bout en bout :
+
+1. Inscription d'une nouvelle boulangerie.
+
+2. Vérification de l'e-mail.
+
+3. Connexion et restauration de session.
+
+4. Création d'une catégorie.
+
+5. Création et modification d'un produit.
+
+6. Création d'une recette.
+
+7. Enregistrement des ingrédients.
+
+8. Commande fournisseur.
+
+9. Réception partielle et complète.
+
+10. Vérification du stock.
+
+11. Production.
+
+12. Finalisation et contrôle des consommations.
+
+13. Ouverture de caisse.
+
+14. Vente avec encaissement.
+
+15. Vérification du ticket et du stock.
+
+16. Clôture de caisse.
+
+17. Enregistrement d'une dépense.
+
+18. Consultation des créances et rapports.
+
+19. Test d'une seconde organisation.
+
+20. Test des permissions.
+
+21. Test d'une opération hors ligne.
+
+22. Vérification des rapports et exports.
+
+### QA-005 — Non-régression
+
+* Rejouer les tests après chaque correction sensible.
+
+* Vérifier les modules voisins.
+
+* Tester les erreurs et les scénarios limites.
+
+* Comparer les résultats financiers aux calculs de référence.
+
+* Documenter les anomalies restantes.
+
+---
+
+# 20. RÈGLES POUR L'EXÉCUTION DES MIGRATIONS
+
+Les migrations constituent une zone de risque particulière.
+
+L'agent doit :
+
+* Travailler sur une base de test pour les expérimentations.
+
+* Examiner l'état réel des migrations existantes.
+
+* Ne jamais supprimer des données pour résoudre un conflit de schéma.
+
+* Ne jamais exécuter une migration destructive en production sans sauvegarde, analyse d'impact et validation explicite.
+
+* Prévoir des stratégies de migration en plusieurs étapes lorsque nécessaire.
+
+* Vérifier les données existantes avant d'ajouter des contraintes `NOT NULL` ou des clés étrangères.
+
+* Générer des scripts de contrôle avant et après la migration.
+
+* Documenter les mesures de reprise en cas d'échec.
+
+Ne jamais annoncer que les migrations fonctionnent simplement parce que leur code SQL est syntaxiquement plausible.
+
+---
+
+# 21. FORMAT OBLIGATOIRE DES MISES À JOUR
+
+À la fin de chaque session de travail, présente un rapport sous cette forme :
+
+## État de la roadmap
+
+* Phase active :
+
+* Tâche en cours :
+
+* Tâches terminées et vérifiées :
+
+* Tâches encore ouvertes :
+
+* Blocages :
+
+* Risques P0 :
+
+* Tests réellement exécutés :
+
+* Tests réussis :
+
+* Tests échoués :
+
+* Fichiers modifiés :
+
+* Migrations créées :
+
+* Décisions à prendre :
+
+* Prochaine tâche recommandée :
+
+Pour chaque test, indique la commande et son résultat réel.
+
+Pour chaque tâche terminée, donne une preuve vérifiable.
+
+Ne prétends jamais qu'un déploiement, une intégration ou une migration a réussi si tu ne disposes pas d'une confirmation réelle.
+
+---
+
+# 22. RÈGLES DE PRIORISATION ET DE DÉPENDANCES
+
+L'ordre général est le suivant :
+
+1. Secrets et configurations dangereuses.
+
+2. Authentification et accès aux routes.
+
+3. Isolation multi-tenant.
+
+4. Intégrité de la base et migrations.
+
+5. Transactions et règles métier.
+
+6. Ventes, caisse, achats, stocks et production.
+
+7. CRUD et synchronisation de l'interface.
+
+8. Mode hors ligne.
+
+9. Rapports, notifications et exports.
+
+10. Intégrations.
+
+11. Administration, audit et sauvegardes.
+
+12. Abonnements SaaS et préparation commerciale.
+
+13. Durcissement et mise en production.
+
+Cet ordre est une règle générale. Les dépendances réelles doivent être représentées dans la roadmap.
+
+Si une anomalie bloque plusieurs modules, augmente sa priorité selon son impact.
+
+Ne commence pas une tâche dépendante tant que sa précondition n'est pas satisfaite.
+
+Ne bloque pas les tâches indépendantes sans raison technique.
+
+Ne développe pas des fonctionnalités avancées alors qu'une faille P0 connue permettrait une fuite de données ou une perte financière.
+
+---
+
+# 23. CRITÈRES DE SORTIE DE LA ROADMAP
+
+La roadmap n'est pas terminée parce que toutes les cases sont cochées.
+
+Le projet peut être déclaré prêt à la mise en production uniquement lorsque :
+
+* Les secrets et configurations sont sécurisés.
+
+* L'authentification est cohérente.
+
+* Les routes privées sont protégées.
+
+* L'isolation multi-tenant a été testée.
+
+* Le schéma et les migrations sont validés.
+
+* Les opérations métier critiques sont cohérentes.
+
+* Les ventes, paiements, achats, stocks et productions sont vérifiables.
+
+* Les erreurs n'entraînent pas de fausses confirmations.
+
+* Le mode démo est désactivé ou isolé en production.
+
+* Aucun fallback silencieux vers les données fictives n'est possible en production.
+
+* Les tests critiques passent sur un environnement contrôlé.
+
+* Les procédures de sauvegarde et restauration sont documentées et testées.
+
+* La configuration de déploiement est documentée.
+
+* Les principaux parcours de bout en bout passent.
+
+* Les anomalies restantes sont classées et acceptées explicitement.
+
+* Les documents de préparation à la production contiennent des preuves.
+
+Si l'une de ces conditions critiques n'est pas remplie, indique clairement que la mise en production reste bloquée.
+
+---
+
+# 24. PREMIÈRE ACTION À EXÉCUTER MAINTENANT
+
+Commence par la phase 0 et exécute exclusivement l'audit de référence.
+
+Ne lance pas immédiatement une refonte complète.
+
+Ta première mission est :
+
+1. Examiner l'état actuel de la branche de référence.
+
+2. Vérifier les scripts et les commandes disponibles.
+
+3. Exécuter les validations réalisables.
+
+4. Vérifier les risques de sécurité sans révéler de secrets.
+
+5. Comparer le code aux documents existants.
+
+6. Construire `ROADMAP.md`.
+
+7. Construire `TODO.md`.
+
+8. Construire `docs/EXECUTION_LOG.md`.
+
+9. Construire `docs/KNOWN_ISSUES.md`.
+
+10. Construire `docs/PRODUCTION_READINESS.md`.
+
+11. Identifier les tâches P0.
+
+12. Présenter un bilan de l'audit et recommander la toute première correction.
+
+Ensuite, exécute les tâches une par une, par ordre de priorité, en mettant à jour les fichiers de suivi.
+
+Si tu ne peux pas accéder au dépôt ou exécuter une commande, indique le blocage. Ne fabrique aucune preuve.
+
+**OBJECTIF FINAL : transformer BoulangeriePro ERP en un produit commercialisable sur lequel plusieurs boulangeries peuvent compter quotidiennement, en garantissant une persistance réelle, des opérations métier cohérentes, une isolation stricte des données et une maintenance maîtrisée.**
+
+## Comment lancer le travail correctement
+
+Je te recommande de donner ce prompt à ton agent en deux étapes.
+
+Première étape : générer la roadmap, sans modifier le code métier. L'agent doit examiner le dépôt, exécuter les contrôles disponibles et créer les cinq documents de pilotage. Cela évite qu'il se lance dans des corrections dispersées sans comprendre les dépendances.
+
+Deuxième étape : commencer par les tâches P0. Dès que `TODO.md` est établi, demande à l'agent de traiter une seule tâche à la fois, en commençant par les secrets et l'authentification. Il doit conserver les modifications, tests et preuves avant de passer à la suivante.
+
+Tu peux lui donner cette instruction complémentaire pour démarrer :
 
 Message
 
-Tu as accès au dépôt ERP_BOULANGERIE_CI. Travaille directement dans les fichiers existants. Commence par le Lot 0, vérifie les problèmes dans le code et l'état initial du projet, puis implémente réellement les corrections. Continue les lots dans l'ordre sans réécrire inutilement l'application. Exécute les tests disponibles après chaque lot. Ne simule aucun succès, ne touche pas aux données de production sans autorisation et indique précisément les éventuels blocages. À la fin, fournis le bilan des fichiers modifiés, des tests exécutés, du build et des tâches qui restent à faire.
+Applique maintenant le Master Prompt de roadmap au dépôt BoulangeriePro ERP.
 
-Mon conseil : commence par les lots 0 à 3 avant de consacrer du temps aux animations, à une refonte graphique ou à une migration de framework. Une fois la sécurité, la base Neon et les transactions métier fiabilisées, tu pourras travailler sur l’expérience premium et la commercialisation de l’ERP avec beaucoup moins de risques.
+Pour cette première intervention, travaille exclusivement sur l'audit et la création des documents de pilotage. N'entreprends aucune refonte du code métier.
+
+Inspecte le dépôt actuel, vérifie les commandes disponibles, exécute les validations réalisables et crée les cinq documents de suivi demandés.
+
+Classe toutes les anomalies par priorité et par dépendance. Distingue les problèmes confirmés des risques à investiguer. Ne marque aucun test comme réussi sans l'avoir exécuté.
+
+À la fin, présente-moi le bilan de l'audit, les tâches P0 découvertes, les éventuels blocages et la première correction que tu recommandes. Attends la fin de cette étape avant d'entreprendre les corrections suivantes.
+
+Point de vigilance : la première action de la roadmap doit rester la sécurisation des secrets potentiellement exposés dans le dépôt public. Il ne faut pas attendre la fin des fonctionnalités avancées pour traiter ce risque.
