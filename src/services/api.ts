@@ -16,11 +16,14 @@ const API_BASE = import.meta.env.VITE_API_URL ?? "";
 /** URL d'authentification locale (POST /api/auth/login). */
 const NEON_AUTH_URL = "/api/auth/login";
 
-// Plus de stockage localStorage : le token est maintenant dans un cookie HttpOnly
-// géré automatiquement par le navigateur. Les fonctions sont gardées pour compatibilité.
-export const getToken = (): string | null => null;
-export const setToken = (_token: string | null): void => {
-  // Plus d'opération nécessaire : cookie géré par le serveur
+// Stockage du token dans localStorage pour compatibilité avec tous les environnements
+export const getToken = (): string | null => localStorage.getItem('auth_token');
+export const setToken = (token: string | null): void => {
+  if (token) {
+    localStorage.setItem('auth_token', token);
+  } else {
+    localStorage.removeItem('auth_token');
+  }
 };
 
 /** Erreur API normalisée, porteuse d'un message lisible. */
@@ -44,8 +47,10 @@ export const apiFetch = async <T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> => {
+  const token = getToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    ...(token ? { "Authorization": `Bearer ${token}` } : {}),
     ...(options.headers as Record<string, string> | undefined),
   };
 
@@ -130,19 +135,23 @@ export interface LoginResponse {
   user: SessionUser;
 }
 
-/** Authentifie un utilisateur auprès de Neon Auth et mémorise le jeton. */
+/** Authentifie un utilisateur et retourne son profil. */
 export const login = async (
   email: string,
   password: string,
 ): Promise<SessionUser> => {
-  // Requête vers Neon Auth pour obtenir un token JWT
-  const response = await fetch(NEON_AUTH_URL, {
+  console.log("[api.login] Tentative de connexion:", email);
+  
+  const response = await fetch("/api/auth/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "include",
     body: JSON.stringify({ email, password }),
   });
+
+  console.log("[api.login] Response status:", response.status);
 
   if (!response.ok) {
     let message = `Erreur ${response.status}`;
@@ -152,17 +161,33 @@ export const login = async (
     } catch {
       /* corps non JSON : on garde le message générique */
     }
+    console.error("[api.login] Erreur:", message);
     throw new ApiError(message, response.status);
   }
 
-  const data = (await response.json()) as LoginResponse;
-  setToken(data.token);
-  return data.user;
+  const body = await response.json();
+  console.log("[api.login] Response body:", body);
+  
+  // Nouveau format : { success, data: { user } } ou ancien format : { user, token }
+  const user: SessionUser = body.data?.user ?? body.user;
+  if (!user) {
+    console.error("[api.login] Pas d'utilisateur dans la réponse");
+    throw new ApiError("Réponse de connexion invalide.", response.status);
+  }
+  
+  console.log("[api.login] Connexion réussie:", user.name);
+  return user;
 };
 
-/** Termine la session locale (invalidation du token côté Neon peut être ajoutée si nécessaire). */
-export const logout = (): void => setToken(null);
+/** Termine la session locale. */
+export const logout = (): void => {
+  setToken(null);
+};
 
-/** Récupère le profil de l'utilisateur courant via l'API locale qui valide le token avec Neon JWKS. */
-export const me = (): Promise<SessionUser> =>
-  api.get<SessionUser>("/api/auth/me");
+/** Récupère le profil de l'utilisateur courant. */
+export const me = async (): Promise<SessionUser> => {
+  const body = await api.get<any>("/api/auth/me");
+  // Nouveau format : { success, data: { ... } } ou ancien format : { ... }
+  const user: SessionUser = body.data ?? body;
+  return user;
+};

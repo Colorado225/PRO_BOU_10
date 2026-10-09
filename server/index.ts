@@ -167,7 +167,7 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", service: "boulangeriepro-api" });
 });
 
-// Routes d'authentification : seules /login et /refresh sont publiques
+// Routes d'authentification : /login, /register, /verify-email, /resend-verification, /forgot-password, /reset-password, /refresh sont publiques
 app.use("/api/auth", authRouter);
 
 // Middleware global d'authentification : TOUTES les autres routes API nécessitent une authentification
@@ -178,6 +178,11 @@ app.use((req, res, next) => {
     req.path.startsWith("/api/sse/") ||
     req.path === "/api/health" ||
     req.path === "/api/auth/login" ||
+    req.path === "/api/auth/register" ||
+    req.path === "/api/auth/verify-email" ||
+    req.path === "/api/auth/resend-verification" ||
+    req.path === "/api/auth/forgot-password" ||
+    req.path === "/api/auth/reset-password" ||
     req.path === "/api/auth/refresh"
   ) {
     return next();

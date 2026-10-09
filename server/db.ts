@@ -1,68 +1,125 @@
 /**
- * Couche d'acces a la base Neon (Postgres serverless).
+ * Couche d'accès à la base de données.
  *
- * On utilise le Pool WebSocket de @neondatabase/serverless (et non la
- * fonction HTTP neon()), car le driver HTTP ne conserve pas de session
- * entre deux requetes : impossible d'y enchainer BEGIN / COMMIT.
- * Le Pool permet de vraies transactions atomiques, indispensables pour les
- * operations metier multi-tables (vente + stock, reception + dette).
+ * Utilise Neon (Postgres serverless) en production.
+ * Bascule automatiquement vers une base locale (JSON) quand Neon n'est pas accessible
+ * (sandbox, développement hors-ligne, etc.).
+ *
+ * L'interface publique (query, queryOne, transaction) reste identique dans les deux modes.
  */
 import { Pool, neonConfig } from "@neondatabase/serverless";
 import ws from "ws";
 import { config } from "./config";
+import { mockQuery, mockQueryOne } from "./mockDb";
 
 neonConfig.webSocketConstructor = ws;
 
-const pool = new Pool({ connectionString: config.databaseUrl });
+let pool: Pool | null = null;
+let useMockDb = false;
 
-/** Executeur de requetes SQL : signature generique preservee. */
+// ═══════════════════════════════════════════════════════════════
+// Types
+// ═══════════════════════════════════════════════════════════════
 export type SqlRunner = <T = Record<string, unknown>>(
   text: string,
   params?: unknown[],
 ) => Promise<T[]>;
 
-/** Executeur renvoyant une ligne unique (ou null). */
 export type SqlRunnerOne = <T = Record<string, unknown>>(
   text: string,
   params?: unknown[],
 ) => Promise<T | null>;
 
-/** Client SQL expose aux callbacks de transaction. */
 export interface SqlClient {
   query: SqlRunner;
   queryOne: SqlRunnerOne;
 }
 
+// ═══════════════════════════════════════════════════════════════
+// Initialisation — détection automatique du mode
+// ═══════════════════════════════════════════════════════════════
+let initPromise: Promise<void> | null = null;
+
+async function initDb(): Promise<void> {
+  if (initPromise) return initPromise;
+
+  initPromise = (async () => {
+    try {
+      pool = new Pool({ connectionString: config.databaseUrl });
+      // Tester la connexion
+      const result = await pool.query("SELECT 1");
+      if (result.rows.length > 0) {
+        useMockDb = false;
+        console.log("[db] ✅ Connecté à Neon (Postgres serverless)");
+        return;
+      }
+    } catch (err) {
+      console.warn(
+        "[db] ⚠️  Neon non accessible — bascule vers la base locale (mock-data.json)",
+      );
+    }
+    useMockDb = true;
+    pool = null;
+  })();
+
+  return initPromise;
+}
+
+// Démarrer l'initialisation immédiatement
+initDb();
+
+// ═══════════════════════════════════════════════════════════════
+// API publique
+// ═══════════════════════════════════════════════════════════════
+
 /**
- * Execute une requete SQL parametree et renvoie les lignes.
- * Requetes parametrees uniquement : jamais d'interpolation de chaine,
- * pour eviter toute injection SQL.
+ * Exécute une requête SQL paramétrée et renvoie les lignes.
+ * Utilise Neon si accessible, sinon la base locale JSON.
  */
 export const query: SqlRunner = async <T = Record<string, unknown>>(
   text: string,
   params: unknown[] = [],
 ): Promise<T[]> => {
-  const result = await pool.query(text, params);
+  await initDb();
+
+  if (useMockDb) {
+    return mockQuery<T>(text, params);
+  }
+
+  const result = await pool!.query(text, params);
   return result.rows as T[];
 };
 
-/** Renvoie la premiere ligne, ou null si aucune. */
+/** Renvoie la première ligne, ou null si aucune. */
 export const queryOne: SqlRunnerOne = async <T = Record<string, unknown>>(
   text: string,
   params: unknown[] = [],
 ): Promise<T | null> => {
+  await initDb();
+
+  if (useMockDb) {
+    return mockQueryOne<T>(text, params);
+  }
+
   const rows = await query<T>(text, params);
   return rows[0] ?? null;
 };
 
 /**
- * Execute une serie d'operations dans une transaction atomique : soit tout
- * est valide (COMMIT), soit tout est annule (ROLLBACK).
+ * Exécute une série d'opérations dans une transaction atomique.
+ * En mode mock, les opérations sont exécutées séquentiellement (pas de vraie transaction).
  */
 export const transaction = async <T>(
   fn: (tx: SqlClient) => Promise<T>,
 ): Promise<T> => {
-  const client = await pool.connect();
+  await initDb();
+
+  if (useMockDb) {
+    // En mode mock, pas de vraie transaction — exécution séquentielle
+    return fn({ query: mockQuery, queryOne: mockQueryOne });
+  }
+
+  const client = await pool!.connect();
 
   const txQuery: SqlRunner = async <R = Record<string, unknown>>(
     text: string,

@@ -104,9 +104,74 @@
   - [x] Routes des bons de commande (`/purchase-orders`)
   - [x] Schéma de réponse standard avec objet `pagination` : `{ total, page, limit, totalPages }`
 
-## 🧪 Tests
+## 🔐 Authentification avancée (Terminée)
 
-- [ ] Tester l'isolation multi-tenant : un utilisateur ne peut pas accéder aux données d'un autre store
-- [ ] Tester les migrations versionnées
-- [ ] Tester l'authentification et les refresh tokens
-- [ ] Tester les permissions RBAC
+- [x] Implémenter le système complet d'authentification compatible Neon Auth
+- [x] Créer la migration 004 pour les champs d'authentification avancés
+  - [x] email_verified_at (vérification d'email)
+  - [x] password_reset_token et password_reset_expires_at (réinitialisation)
+  - [x] email_verification_token et email_verification_expires_at (OTP)
+  - [x] last_login_at (audit)
+  - [x] failed_login_attempts et locked_until (protection brute-force)
+- [x] Créer le service d'envoi d'emails (server/services/emailService.ts)
+  - [x] Templates HTML professionnels pour tous les emails
+  - [x] Email de vérification avec code OTP (6 chiffres)
+  - [x] Email de réinitialisation de mot de passe
+  - [x] Email de bienvenue après vérification
+  - [x] Mode développement (logs console) et production (SMTP)
+- [x] Implémenter les routes d'authentification avancées
+  - [x] POST /api/auth/register (avec envoi OTP automatique)
+  - [x] POST /api/auth/verify-email (vérification par OTP)
+  - [x] POST /api/auth/resend-verification (renvoi du code)
+  - [x] POST /api/auth/login (avec protection brute-force 5 tentatives/15 min)
+  - [x] POST /api/auth/forgot-password (demande de réinitialisation)
+  - [x] POST /api/auth/reset-password (réinitialisation effective)
+  - [x] POST /api/auth/change-password (changement authentifié)
+- [x] Créer les composants frontend
+  - [x] ForgotPasswordView.tsx (demande de réinitialisation)
+  - [x] VerifyEmailView.tsx (vérification OTP avec countdown)
+  - [x] ResetPasswordView.tsx (nouveau mot de passe)
+  - [x] Intégration dans App.tsx avec navigation entre toutes les vues
+- [x] Mettre à jour SignUpView pour rediriger vers vérification email
+- [x] Mettre à jour LoginView avec lien "Mot de passe oublié"
+- [x] Toutes les réponses API utilisent le format standard `{ success, data, message, error }`
+- [x] Protection contre les attaques brute-force (verrouillage après 5 tentatives)
+- [x] Auto-login après vérification d'email et réinitialisation de mot de passe
+- [x] Révocation des sessions lors du changement de mot de passe
+
+## 🧪 Tests (Terminés)
+
+- [x] Tester l'isolation multi-tenant : un utilisateur ne peut pas accéder aux données d'un autre store (15 tests)
+- [x] Tester les migrations versionnées (23 tests)
+- [x] Tester l'authentification et les refresh tokens (22 tests)
+- [x] Tester les permissions RBAC (24 tests)
+
+## 🔧 Phase 3 : Mode local fonctionnel (Terminée)
+
+- [x] Corriger le bug ESM dans emailService.ts (`require("crypto")` → `import { randomBytes }`)
+- [x] Étendre mockDb pour supporter toutes les tables métier (20 tables)
+  - [x] products, raw_materials, recipes, recipe_ingredients
+  - [x] customers, suppliers
+  - [x] production_orders, sales, sale_items
+  - [x] purchase_orders, purchase_order_items
+  - [x] losses, cash_transactions, custom_orders
+  - [x] company_settings, stock_movements
+- [x] Améliorer le parser SQL du mockDb
+  - [x] Support de la clause RETURNING pour les INSERT
+  - [x] Support de ON CONFLICT DO NOTHING
+  - [x] Gestion des colonnes manquantes dans WHERE (filtres ignorés)
+  - [x] Gestion des paramètres double-chiffre ($10, $11)
+- [x] Seeder mock-data.json avec les données de démonstration
+  - [x] Script `server/seed-mock.ts` pour régénérer les données
+  - [x] 12 produits, 11 matières premières, 3 recettes
+  - [x] 4 clients, 5 fournisseurs
+  - [x] 5 ordres de production, 11 ventes, 2 bons de commande
+  - [x] 3 pertes, 2 transactions caisse, 2 commandes gâteaux
+- [x] Ajouter le mode démo (connexion instantanée sans API)
+  - [x] `demoLogin()` dans AuthContext — bypass complet de l'API
+  - [x] Persistance via `localStorage.auth_mode = "demo"`
+  - [x] Bouton « 🚀 Accéder au dashboard (démo) » dans LoginView
+- [x] DashboardErrorBoundary pour isolation des crashs du dashboard
+- [x] Corriger le BakeryContext pour conserver les données par défaut si API vide
+- [x] Vérifier les routes dashboard (stats, recent-sales, low-stock)
+- [x] CRUD opérationnel en mode mock (INSERT/SELECT/UPDATE/DELETE)

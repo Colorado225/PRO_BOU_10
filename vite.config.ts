@@ -75,9 +75,32 @@ export default defineConfig(() => {
         "@": path.resolve(import.meta.dirname, "."),
       },
     },
+    build: {
+      // Optimisation du code splitting pour éviter les warnings de preload
+      rollupOptions: {
+        output: {
+          manualChunks(id: string) {
+            if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) {
+              return 'vendor';
+            }
+            if (id.includes('node_modules/lucide-react') || id.includes('node_modules/motion')) {
+              return 'ui';
+            }
+            if (id.includes('node_modules/recharts')) {
+              return 'charts';
+            }
+          },
+        },
+      },
+      // Désactiver le preload automatique des modules non critiques
+      modulePreload: {
+        polyfill: false,
+      },
+    },
     server: {
       host: "0.0.0.0",
       port: 3000,
+      allowedHosts: true,
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modify—file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== "true",
@@ -89,6 +112,9 @@ export default defineConfig(() => {
         "/api": {
           target: process.env.API_PROXY_TARGET || "http://localhost:4000",
           changeOrigin: true,
+          headers: {
+            "X-Forwarded-Proto": "https",
+          },
         },
       },
     },
