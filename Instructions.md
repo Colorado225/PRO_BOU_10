@@ -175,3 +175,79 @@
 - [x] Corriger le BakeryContext pour conserver les données par défaut si API vide
 - [x] Vérifier les routes dashboard (stats, recent-sales, low-stock)
 - [x] CRUD opérationnel en mode mock (INSERT/SELECT/UPDATE/DELETE)
+
+## 🚀 Phase 4 : Fonctionnalités avancées (À faire)
+
+### Pagination & Performance
+- [ ] Implémenter la pagination côté frontend pour toutes les listes
+  - [ ] Composant `<Pagination />` réutilisable (page, limit, total)
+  - [ ] Intégrer dans ProductsView, CustomersView, SalesView, ProductionView
+  - [ ] Infinite scroll optionnel pour le POS
+- [ ] Virtualisation des listes longues (react-window) pour +1000 items
+- [ ] Lazy loading des onglets (ne charger les données qu'à l'ouverture)
+
+### Export & Reporting
+- [ ] Export PDF des rapports (factures, bons de commande, rapports journaliers)
+  - [ ] Template HTML → PDF via puppeteer ou jsPDF
+  - [ ] Facture de vente formatée (en-tête entreprise, TVA, mentions légales)
+  - [ ] Bon de commande fournisseur imprimable
+  - [ ] Rapport journalier de caisse (résumé ventes, encaissements, écarts)
+- [ ] Export Excel/CSV des données
+  - [ ] Bouton export sur chaque vue de liste
+  - [ ] Format compatible avec les outils comptables ivoiriens
+- [ ] Graphiques avancés (recharts)
+  - [ ] Courbe des ventes sur 30/90 jours
+  - [ ] Diagramme de Pareto des produits les plus vendus
+  - [ ] Graphique d'évolution des stocks
+  - [ ] Heatmap des ventes par heure/jour
+
+### Notifications & Temps réel
+- [ ] Système de notifications in-app
+  - [ ] Alertes stock bas (push vers le dashboard)
+  - [ ] Notifications de production (ordre prêt, retard)
+  - [ ] Alertes commandes clients (deadline approchant)
+  - [ ] Centre de notifications dans le Header
+- [ ] WebSocket pour mises à jour temps réel
+  - [ ] Nouvelles ventes → mise à jour dashboard instantanée
+  - [ ] Changements de stock → alerte magasinier
+  - [ ] Statut production → notification boulanger
+
+### Mobile & PWA
+- [ ] Optimisation PWA complète
+  - [ ] Service Worker avec cache intelligent
+  - [ ] Mode hors-ligne fonctionnel (lecture + écriture en queue)
+  - [ ] Synchronisation automatique au retour réseau
+  - [ ] Badge d'indicateur online/offline
+- [ ] Interface tactile optimisée pour tablette POS
+  - [ ] Boutons large format pour le POS
+  - [ ] Gestes tactiles (swipe pour supprimer, pinch pour zoomer)
+  - [ ] Mode plein écran pour la caisse
+
+### Intégrations
+- [ ] Intégration Mobile Money (Orange Money, MTN, Wave)
+  - [ ] API de paiement pour les ventes POS
+  - [ ] Webhook de confirmation de paiement
+  - [ ] Réconciliation automatique avec les ventes
+- [ ] Intégration imprimante thermique ESC/POS
+  - [ ] Impression ticket de caisse formaté
+  - [ ] Impression bon de production pour le fournil
+  - [ ] Configuration imprimante dans les Settings
+- [ ] Scanner de codes-barres
+  - [ ] Scan produit via caméra (Web API BarcodeDetector)
+  - [ ] Scan physique (douchette USB/Bluetooth)
+  - [ ] Recherche instantanée dans le catalogue
+
+### Administration & Audit
+- [ ] Journal d'audit complet
+  - [ ] Logger toutes les actions utilisateur (CRUD, login, export)
+  - [ ] Vue d'audit dans les Settings (filtrable par user/date/action)
+  - [ ] Alertes sur actions sensibles (suppression, changement prix)
+- [ ] Gestion avancée des utilisateurs
+  - [ ] CRUD utilisateurs pour le gérant (interface admin)
+  - [ ] Attribution de permissions granulaires
+  - [ ] Désactivation temporaire de comptes
+  - [ ] Historique des sessions
+- [ ] Backup & restauration
+  - [ ] Export complet des données (JSON)
+  - [ ] Import de données depuis un backup
+  - [ ] Planification de backups automatiques
