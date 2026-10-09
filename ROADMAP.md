@@ -1,12 +1,3 @@
-Pour BoulangeriePro ERP, le bon document à donner à ton agent IA est un Master Prompt de pilotage technique et de roadmap, qui servira à la fois de liste de tâches, de plan de correction, de registre des anomalies et de suivi de l'avancement jusqu'à la mise en production.
-
-Il doit s'appuyer sur le dépôt existant [`Colorado225/PRO_BOUL9_10`](https://github.com/Colorado225/PRO_BOUL9_10), respecter son architecture actuelle React/Vite + Express + TypeScript + Neon PostgreSQL, et corriger les problèmes avant d'ajouter de nouvelles fonctionnalités.
-
-Le principe directeur : chaque tâche doit avoir un identifiant, une priorité, des dépendances, des critères d'acceptation et une preuve de validation. Une tâche ne sera jamais considérée comme terminée simplement parce que le code a été généré.
-
-Voici le prompt complet, conçu pour être copié dans ton agent IA de développement.
-
-MASTER PROMPT — ROADMAP, TODO LIST ET PILOTAGE DE LA MISE EN PRODUCTION DE BOULANGERIEPRO ERP
 
 # MASTER PROMPT — ROADMAP, TODO LIST ET PILOTAGE DE LA MISE EN PRODUCTION DE BOULANGERIEPRO ERP
 
