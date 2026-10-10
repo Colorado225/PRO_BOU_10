@@ -55,8 +55,8 @@
       "failed_login_attempts": 1,
       "locked_until": null,
       "created_at": "2026-10-09T17:13:18.097Z",
-      "updated_at": "2026-10-09T18:31:41.049Z",
-      "last_login_at": "2026-10-09T18:31:41.049Z"
+      "updated_at": "2026-10-10T14:27:50.820Z",
+      "last_login_at": "2026-10-10T14:27:50.819Z"
     },
     {
       "id": "usr-caissier",
@@ -71,8 +71,8 @@
       "failed_login_attempts": 0,
       "locked_until": null,
       "created_at": "2026-10-09T17:13:18.097Z",
-      "updated_at": "2026-10-09T18:08:59.272Z",
-      "last_login_at": "2026-10-09T18:08:59.272Z"
+      "updated_at": "2026-10-10T14:26:05.590Z",
+      "last_login_at": "2026-10-10T14:26:05.590Z"
     },
     {
       "id": "usr-boulanger",
@@ -103,8 +103,8 @@
       "failed_login_attempts": 0,
       "locked_until": null,
       "created_at": "2026-10-09T17:13:18.097Z",
-      "updated_at": "2026-10-09T18:08:54.207Z",
-      "last_login_at": "2026-10-09T18:08:54.207Z"
+      "updated_at": "2026-10-10T14:18:34.327Z",
+      "last_login_at": "2026-10-10T14:18:34.327Z"
     },
     {
       "id": "usr-1791565998189-6sfnms",
@@ -655,6 +655,76 @@
       "expires_at": "2026-10-16T18:31:41.052Z",
       "id": "ref-1791570701052-0mk8kh",
       "created_at": "2026-10-09T18:31:41.052Z"
+    },
+    {
+      "token": "d4e5c307-aa69-4da2-9ece-d1a5c92f041c20aaef04-77c5-4c59-84d7-e0f2621b303a",
+      "user_id": "usr-gerant",
+      "expires_at": "2026-10-17T14:18:12.401Z",
+      "id": "ref-1791641892401-z205g2",
+      "created_at": "2026-10-10T14:18:12.401Z"
+    },
+    {
+      "token": "5f6ae0b6-e432-4cb4-8485-b7dc701a3883ddbab7fd-658b-403d-ad0f-f9df89f94104",
+      "user_id": "usr-caissier",
+      "expires_at": "2026-10-17T14:18:22.282Z",
+      "id": "ref-1791641902282-pigk4b",
+      "created_at": "2026-10-10T14:18:22.282Z"
+    },
+    {
+      "token": "938d7c4e-3616-41bb-8bcc-d4bf4292a04f8c654f68-1811-4e73-ac8c-061ba521206c",
+      "user_id": "usr-magasinier",
+      "expires_at": "2026-10-17T14:18:34.330Z",
+      "id": "ref-1791641914330-u5xvo6",
+      "created_at": "2026-10-10T14:18:34.331Z"
+    },
+    {
+      "token": "ce13556a-0cc5-4848-93dc-48660540361623e44bc6-7db5-4e0d-8ebb-35e3725e02f4",
+      "user_id": "usr-gerant",
+      "expires_at": "2026-10-17T14:20:45.330Z",
+      "id": "ref-1791642045331-atse79",
+      "created_at": "2026-10-10T14:20:45.331Z"
+    },
+    {
+      "token": "4fffa586-dde9-4edf-b7b2-db4e90776ff88223e3c4-9aa7-4389-94c3-6d085b79902d",
+      "user_id": "usr-gerant",
+      "expires_at": "2026-10-17T14:22:59.460Z",
+      "id": "ref-1791642179460-vv51i2",
+      "created_at": "2026-10-10T14:22:59.460Z"
+    },
+    {
+      "token": "0107d133-950a-4990-9207-71deefb1a695c4817bc5-effc-4980-a11d-28488304f2bf",
+      "user_id": "usr-gerant",
+      "expires_at": "2026-10-17T14:24:11.842Z",
+      "id": "ref-1791642251842-hjpmk0",
+      "created_at": "2026-10-10T14:24:11.842Z"
+    },
+    {
+      "token": "c70a89cb-e997-450e-ae28-628746f21730b1ba93b1-8513-4ef5-b75e-74af3ebac1dd",
+      "user_id": "usr-caissier",
+      "expires_at": "2026-10-17T14:25:21.186Z",
+      "id": "ref-1791642321186-zj0yo0",
+      "created_at": "2026-10-10T14:25:21.186Z"
+    },
+    {
+      "token": "30bd8fe5-419b-4fb3-a2a4-ac4458d1e51dba9a82b7-c67f-49de-8d67-8d52bc411d08",
+      "user_id": "usr-caissier",
+      "expires_at": "2026-10-17T14:26:05.592Z",
+      "id": "ref-1791642365592-dvu47a",
+      "created_at": "2026-10-10T14:26:05.592Z"
+    },
+    {
+      "token": "2cad5e7a-7749-48be-9e9f-03f37a07a2d94b412af8-2152-4991-af64-4368099cdb3a",
+      "user_id": "usr-gerant",
+      "expires_at": "2026-10-17T14:27:16.812Z",
+      "id": "ref-1791642436812-kxqxds",
+      "created_at": "2026-10-10T14:27:16.812Z"
+    },
+    {
+      "token": "94b2a122-79ad-49d1-b192-bc40f3187bd331d017b1-e143-472e-a684-b988affe07a3",
+      "user_id": "usr-gerant",
+      "expires_at": "2026-10-17T14:27:50.822Z",
+      "id": "ref-1791642470822-o2htgb",
+      "created_at": "2026-10-10T14:27:50.822Z"
     }
   ],
   "company_settings": [

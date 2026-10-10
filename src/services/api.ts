@@ -10,19 +10,21 @@
  * qui fournit les tokens et le JWKS pour la validation côté serveur.
  */
 
+import { safeStorage } from '../utils/safeStorage';
+
 /** Base URL de l'API. Vide en dev → on s'appuie sur le proxy Vite `/api`. */
-const API_BASE = import.meta.env.VITE_API_URL ?? "";
+const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ? import.meta.env.VITE_API_URL : "";
 
 /** URL d'authentification locale (POST /api/auth/login). */
 const NEON_AUTH_URL = "/api/auth/login";
 
-// Stockage du token dans localStorage pour compatibilité avec tous les environnements
-export const getToken = (): string | null => localStorage.getItem('auth_token');
+// Stockage du token avec safeStorage pour compatibilité avec tous les environnements
+export const getToken = (): string | null => safeStorage.getItem('auth_token');
 export const setToken = (token: string | null): void => {
   if (token) {
-    localStorage.setItem('auth_token', token);
+    safeStorage.setItem('auth_token', token);
   } else {
-    localStorage.removeItem('auth_token');
+    safeStorage.removeItem('auth_token');
   }
 };
 

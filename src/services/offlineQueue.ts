@@ -46,7 +46,7 @@ export class OfflineQueueManager {
   private syncInProgress = false;
 
   private state: OfflineState = {
-    isOnline: navigator.onLine,
+    isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
     pendingCount: 0,
     isSyncing: false,
     lastSyncTime: null,
@@ -55,10 +55,12 @@ export class OfflineQueueManager {
 
   constructor() {
     // Écouteurs d'état réseau
-    window.addEventListener("online", this.handleOnline.bind(this));
-    window.addEventListener("offline", this.handleOffline.bind(this));
-    // Initialisation de la base IndexedDB
-    this.initDB();
+    if (typeof window !== 'undefined') {
+      window.addEventListener("online", this.handleOnline.bind(this));
+      window.addEventListener("offline", this.handleOffline.bind(this));
+      // Initialisation de la base IndexedDB
+      this.initDB();
+    }
   }
 
   // Récupération immuable de l'état

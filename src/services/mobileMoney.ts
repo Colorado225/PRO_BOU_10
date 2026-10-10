@@ -57,13 +57,13 @@ const OPERATOR_FEES: Record<
 // URLs des API des opérateurs (sandbox pour développement, depuis variables d'environnement)
 const OPERATOR_API_URLS: Record<MobileMoneyOperator, string> = {
   [MobileMoneyOperator.WAVE]:
-    import.meta.env.VITE_WAVE_API_URL ||
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_WAVE_API_URL) ||
     "https://api.wave.com/sandbox/v1/transactions",
   [MobileMoneyOperator.ORANGE_MONEY]:
-    import.meta.env.VITE_OM_API_URL ||
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_OM_API_URL) ||
     "https://api.orange.com/orange-money-ci/sandbox/v1/payments",
   [MobileMoneyOperator.MTN_MOMO]:
-    import.meta.env.VITE_MTN_API_URL ||
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_MTN_API_URL) ||
     "https://api.mtn.com/momo-ci/sandbox/v1/collections",
 };
 
@@ -82,22 +82,20 @@ export class MobileMoneyManager {
 
   private constructor() {
     // Chargement des clés API depuis les variables d'environnement
-    if (import.meta.env.VITE_WAVE_API_KEY)
+    if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_WAVE_API_KEY)
       this.apiKeys.WAVE = import.meta.env.VITE_WAVE_API_KEY;
-    if (import.meta.env.VITE_OM_API_KEY)
+    if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_OM_API_KEY)
       this.apiKeys.ORANGE_MONEY = import.meta.env.VITE_OM_API_KEY;
-    if (import.meta.env.VITE_MTN_API_KEY)
+    if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_MTN_API_KEY)
       this.apiKeys.MTN_MOMO = import.meta.env.VITE_MTN_API_KEY;
 
     // Initialiser la base IndexedDB pour persistance hors ligne
-    this.initDB();
-
-    // Se connecter au flux SSE pour recevoir les mises à jour de statut en temps réel
-    this.initSSEConnection();
-
-    // Écouter les changements d'état réseau
-    window.addEventListener("online", this.handleOnline.bind(this));
-    window.addEventListener("offline", () => this.closeSSEConnection());
+    if (typeof window !== 'undefined') {
+      this.initDB();
+      this.initSSEConnection();
+      window.addEventListener("online", this.handleOnline.bind(this));
+      window.addEventListener("offline", () => this.closeSSEConnection());
+    }
   }
 
   /**

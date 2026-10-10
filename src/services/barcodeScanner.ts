@@ -8,7 +8,7 @@
  * - Gestion des erreurs utilisateur (permission refusée, etc.)
  */
 
-import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
+import { BrowserMultiFormatReader } from "@zxing/library";
 import type { Result } from "@zxing/library";
 
 // État du scanner exposé à l'UI
@@ -121,7 +121,7 @@ export class BarcodeScannerManager {
             this.stopScanning(); // Arrête automatiquement après un scan réussi
             onScanSuccess(result);
           }
-          if (err && !(err instanceof NotFoundException)) {
+          if (err && err.name !== 'NotFoundException' && err.constructor?.name !== 'NotFoundException') {
             console.warn("Erreur scan:", err);
           }
         },

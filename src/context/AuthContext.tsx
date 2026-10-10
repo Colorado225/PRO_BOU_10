@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import { safeStorage } from '../utils/safeStorage';
 
 interface User {
   id: string;
@@ -42,7 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (restoredRef.current) return;
     restoredRef.current = true;
 
-    const mode = localStorage.getItem('auth_mode');
+    const mode = safeStorage.getItem('auth_mode');
     
     if (mode === 'demo') {
       setUser(DEMO_USER);
@@ -50,7 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
-    const token = localStorage.getItem('auth_token');
+    const token = safeStorage.getItem('auth_token');
     if (!token) {
       setIsRestoring(false);
       return;
@@ -61,7 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     })
       .then(res => {
         if (!res.ok) {
-          localStorage.removeItem('auth_token');
+          safeStorage.removeItem('auth_token');
           throw new Error('Session invalide');
         }
         return res.json();
@@ -98,21 +99,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error('Réponse invalide du serveur');
     }
 
-    localStorage.setItem('auth_token', token);
-    localStorage.removeItem('auth_mode');
+    safeStorage.setItem('auth_token', token);
+    safeStorage.removeItem('auth_mode');
     setUser(userData);
   }, []);
 
   /** Connexion démo instantanée — pas d'appel API */
   const demoLogin = useCallback(() => {
-    localStorage.setItem('auth_mode', 'demo');
-    localStorage.removeItem('auth_token');
+    safeStorage.setItem('auth_mode', 'demo');
+    safeStorage.removeItem('auth_token');
     setUser(DEMO_USER);
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_mode');
+    safeStorage.removeItem('auth_token');
+    safeStorage.removeItem('auth_mode');
     setUser(null);
   }, []);
 

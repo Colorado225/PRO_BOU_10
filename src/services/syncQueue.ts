@@ -5,6 +5,7 @@
  */
 
 import { apiFetch } from "./api";
+import { safeStorage } from "../utils/safeStorage";
 
 // Type d'une opération en attente de synchronisation
 export interface PendingOperation {
@@ -20,19 +21,14 @@ const SYNC_QUEUE_KEY = "boulangerie_pro_sync_queue";
 const MAX_RETRIES = 5;
 const RETRY_DELAY = 30000; // 30 secondes entre les tentatives
 
-// Récupère la file d'attente depuis localStorage
+// Récupère la file d'attente depuis safeStorage
 const getQueue = (): PendingOperation[] => {
-  try {
-    const stored = localStorage.getItem(SYNC_QUEUE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
+  return safeStorage.getJSON<PendingOperation[]>(SYNC_QUEUE_KEY, []);
 };
 
-// Sauvegarde la file d'attente dans localStorage
+// Sauvegarde la file d'attente dans safeStorage
 const saveQueue = (queue: PendingOperation[]): void => {
-  localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(queue));
+  safeStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(queue));
 };
 
 // Génère un ID unique pour une nouvelle opération
@@ -108,15 +104,13 @@ export const retryOperation = (id: string): boolean => {
 // Stocke les opérations échouées dans une file de sauvegarde pour éviter toute perte
 const saveFailedOperation = (op: PendingOperation): void => {
   try {
-    const failedOps = JSON.parse(
-      localStorage.getItem("boulangerie_pro_failed_ops") || "[]",
-    );
+    const failedOps = safeStorage.getJSON<any[]>("boulangerie_pro_failed_ops", []);
     failedOps.push({
       ...op,
       failedAt: Date.now(),
       error: "Conflit ou échec persistant",
     });
-    localStorage.setItem(
+    safeStorage.setItem(
       "boulangerie_pro_failed_ops",
       JSON.stringify(failedOps),
     );
@@ -251,13 +245,7 @@ export const getPendingCount = (): number => {
 export const getFailedOperations = (): Array<
   PendingOperation & { failedAt: number; error: string }
 > => {
-  try {
-    return JSON.parse(
-      localStorage.getItem("boulangerie_pro_failed_ops") || "[]",
-    );
-  } catch {
-    return [];
-  }
+  return safeStorage.getJSON("boulangerie_pro_failed_ops", []);
 };
 
 /**
@@ -274,7 +262,7 @@ export const retryFailedOperation = async (id: string): Promise<boolean> => {
     await apiFetch(op.path, op.options);
     // Retire l'opération des échecs si ça réussit
     failedOps.splice(opIndex, 1);
-    localStorage.setItem(
+    safeStorage.setItem(
       "boulangerie_pro_failed_ops",
       JSON.stringify(failedOps),
     );

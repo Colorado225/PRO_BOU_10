@@ -35,6 +35,7 @@ import {
 } from '../data/initialData';
 import { resolveWriteStoreId } from '../utils/store';
 import { computeVatBreakdown } from '../utils/fiscalite';
+import { safeStorage } from '../utils/safeStorage';
 import { api, ApiError } from '../services/api';
 
 /**
@@ -185,58 +186,46 @@ export const BakeryProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Core Data States
   const [stores, setStores] = useState<Store[]>(INITIAL_STORES);
-  const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_products`);
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
-  });
-  const [materials, setMaterials] = useState<RawMaterial[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_materials`);
-    return saved ? JSON.parse(saved) : INITIAL_MATERIALS;
-  });
-  const [recipes, setRecipes] = useState<Recipe[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_recipes`);
-    return saved ? JSON.parse(saved) : INITIAL_RECIPES;
-  });
-  const [productionOrders, setProductionOrders] = useState<ProductionOrder[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_production`);
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCTION_ORDERS;
-  });
-  const [sales, setSales] = useState<Sale[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_sales`);
-    return saved ? JSON.parse(saved) : INITIAL_SALES;
-  });
-  const [customers, setCustomers] = useState<Customer[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_customers`);
-    return saved ? JSON.parse(saved) : INITIAL_CUSTOMERS;
-  });
-  const [suppliers, setSuppliers] = useState<Supplier[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_suppliers`);
-    return saved ? JSON.parse(saved) : INITIAL_SUPPLIERS;
-  });
-  const [purchases, setPurchases] = useState<PurchaseOrder[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_purchases`);
-    return saved ? JSON.parse(saved) : INITIAL_PURCHASE_ORDERS;
-  });
-  const [losses, setLosses] = useState<LossRecord[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_losses`);
-    return saved ? JSON.parse(saved) : INITIAL_LOSSES;
-  });
-  const [cashTransactions, setCashTransactions] = useState<CashTransaction[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_cash`);
-    return saved ? JSON.parse(saved) : INITIAL_CASH_TRANSACTIONS;
-  });
-  const [customOrders, setCustomOrders] = useState<CustomOrder[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_custom_orders`);
-    return saved ? JSON.parse(saved) : INITIAL_CUSTOM_ORDERS;
-  });
+  const [products, setProducts] = useState<Product[]>(() =>
+    safeStorage.getJSON(`${STORAGE_KEY}_products`, INITIAL_PRODUCTS)
+  );
+  const [materials, setMaterials] = useState<RawMaterial[]>(() =>
+    safeStorage.getJSON(`${STORAGE_KEY}_materials`, INITIAL_MATERIALS)
+  );
+  const [recipes, setRecipes] = useState<Recipe[]>(() =>
+    safeStorage.getJSON(`${STORAGE_KEY}_recipes`, INITIAL_RECIPES)
+  );
+  const [productionOrders, setProductionOrders] = useState<ProductionOrder[]>(() =>
+    safeStorage.getJSON(`${STORAGE_KEY}_production`, INITIAL_PRODUCTION_ORDERS)
+  );
+  const [sales, setSales] = useState<Sale[]>(() =>
+    safeStorage.getJSON(`${STORAGE_KEY}_sales`, INITIAL_SALES)
+  );
+  const [customers, setCustomers] = useState<Customer[]>(() =>
+    safeStorage.getJSON(`${STORAGE_KEY}_customers`, INITIAL_CUSTOMERS)
+  );
+  const [suppliers, setSuppliers] = useState<Supplier[]>(() =>
+    safeStorage.getJSON(`${STORAGE_KEY}_suppliers`, INITIAL_SUPPLIERS)
+  );
+  const [purchases, setPurchases] = useState<PurchaseOrder[]>(() =>
+    safeStorage.getJSON(`${STORAGE_KEY}_purchases`, INITIAL_PURCHASE_ORDERS)
+  );
+  const [losses, setLosses] = useState<LossRecord[]>(() =>
+    safeStorage.getJSON(`${STORAGE_KEY}_losses`, INITIAL_LOSSES)
+  );
+  const [cashTransactions, setCashTransactions] = useState<CashTransaction[]>(() =>
+    safeStorage.getJSON(`${STORAGE_KEY}_cash`, INITIAL_CASH_TRANSACTIONS)
+  );
+  const [customOrders, setCustomOrders] = useState<CustomOrder[]>(() =>
+    safeStorage.getJSON(`${STORAGE_KEY}_custom_orders`, INITIAL_CUSTOM_ORDERS)
+  );
   const [company, setCompany] = useState<CompanySettings>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_company`);
-    return saved ? { ...INITIAL_COMPANY_SETTINGS, ...JSON.parse(saved) } : INITIAL_COMPANY_SETTINGS;
+    const saved = safeStorage.getJSON<Partial<CompanySettings> | null>(`${STORAGE_KEY}_company`, null);
+    return saved ? { ...INITIAL_COMPANY_SETTINGS, ...saved } : INITIAL_COMPANY_SETTINGS;
   });
-  const [stockMovements, setStockMovements] = useState<StockMovement[]>(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_stock_movements`);
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [stockMovements, setStockMovements] = useState<StockMovement[]>(() =>
+    safeStorage.getJSON(`${STORAGE_KEY}_stock_movements`, [])
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   // Charger toutes les données depuis l'API au démarrage
@@ -293,21 +282,21 @@ export const BakeryProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     loadAllData();
   }, []);
 
-  // Sync to LocalStorage
+  // Sync to Storage
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_products`, JSON.stringify(products));
-    localStorage.setItem(`${STORAGE_KEY}_materials`, JSON.stringify(materials));
-    localStorage.setItem(`${STORAGE_KEY}_recipes`, JSON.stringify(recipes));
-    localStorage.setItem(`${STORAGE_KEY}_production`, JSON.stringify(productionOrders));
-    localStorage.setItem(`${STORAGE_KEY}_sales`, JSON.stringify(sales));
-    localStorage.setItem(`${STORAGE_KEY}_customers`, JSON.stringify(customers));
-    localStorage.setItem(`${STORAGE_KEY}_suppliers`, JSON.stringify(suppliers));
-    localStorage.setItem(`${STORAGE_KEY}_purchases`, JSON.stringify(purchases));
-    localStorage.setItem(`${STORAGE_KEY}_losses`, JSON.stringify(losses));
-    localStorage.setItem(`${STORAGE_KEY}_cash`, JSON.stringify(cashTransactions));
-    localStorage.setItem(`${STORAGE_KEY}_custom_orders`, JSON.stringify(customOrders));
-    localStorage.setItem(`${STORAGE_KEY}_company`, JSON.stringify(company));
-    localStorage.setItem(`${STORAGE_KEY}_stock_movements`, JSON.stringify(stockMovements));
+    safeStorage.setItem(`${STORAGE_KEY}_products`, JSON.stringify(products));
+    safeStorage.setItem(`${STORAGE_KEY}_materials`, JSON.stringify(materials));
+    safeStorage.setItem(`${STORAGE_KEY}_recipes`, JSON.stringify(recipes));
+    safeStorage.setItem(`${STORAGE_KEY}_production`, JSON.stringify(productionOrders));
+    safeStorage.setItem(`${STORAGE_KEY}_sales`, JSON.stringify(sales));
+    safeStorage.setItem(`${STORAGE_KEY}_customers`, JSON.stringify(customers));
+    safeStorage.setItem(`${STORAGE_KEY}_suppliers`, JSON.stringify(suppliers));
+    safeStorage.setItem(`${STORAGE_KEY}_purchases`, JSON.stringify(purchases));
+    safeStorage.setItem(`${STORAGE_KEY}_losses`, JSON.stringify(losses));
+    safeStorage.setItem(`${STORAGE_KEY}_cash`, JSON.stringify(cashTransactions));
+    safeStorage.setItem(`${STORAGE_KEY}_custom_orders`, JSON.stringify(customOrders));
+    safeStorage.setItem(`${STORAGE_KEY}_company`, JSON.stringify(company));
+    safeStorage.setItem(`${STORAGE_KEY}_stock_movements`, JSON.stringify(stockMovements));
   }, [products, materials, recipes, productionOrders, sales, customers, suppliers, purchases, losses, cashTransactions, customOrders, company, stockMovements]);
 
   // Implémentation des opérations CRUD synchronisées avec l'API
@@ -1137,7 +1126,7 @@ const resetToDemoData = () => {
   setCustomOrders(INITIAL_CUSTOM_ORDERS);
   setCompany(INITIAL_COMPANY_SETTINGS);
   setStockMovements([]);
-  localStorage.clear();
+  safeStorage.clear();
   showToast('Données de démonstration réinitialisées avec succès.');
 };
 
