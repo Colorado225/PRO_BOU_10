@@ -469,9 +469,11 @@ const seed = async () => {
 };
 
 seed()
-  .then(() => pool.end())
-  .catch((err) => {
+  .then(async () => {
+    if (pool) await pool.end();
+  })
+  .catch(async (err) => {
     console.error("[seed] ❌ Échec :", err);
-    pool.end();
+    if (pool) await pool.end();
     process.exit(1);
   });

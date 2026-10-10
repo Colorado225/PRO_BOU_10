@@ -34,8 +34,8 @@ export interface RecipeInput {
   instructions?: string[];
   totalCost?: number;
   costPerUnit?: number;
-  storeId: string;
-  organizationId: string;
+  storeId?: string;
+  organizationId?: string;
   ingredients?: {
     id?: string;
     materialId: string;
@@ -71,8 +71,14 @@ export interface ProductionOrderInput {
   bakerName?: string;
   shift?: string;
   storeId: string;
-  organizationId: string;
+  organizationId?: string;
   notes?: string;
+  items?: {
+    materialId: string;
+    materialName: string;
+    quantity: number;
+    unit: string;
+  }[];
 }
 
 /** Données de création d'un mouvement de stock. */

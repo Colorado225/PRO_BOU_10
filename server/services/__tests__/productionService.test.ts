@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import type { Mock } from "vitest";
-import type { ProductionOrderItem } from "../../types/bakery";
+import type { ProductionOrderInput } from "../../types/bakery";
 
 // Mock de db.ts
 vi.mock("../../db", () => ({
@@ -23,21 +23,20 @@ beforeAll(async () => {
 
 describe("productionService - createProductionOrder", () => {
   const mockStoreId = "test-store-1";
-  const mockRecordedBy = "chef-atelier-1";
-  const mockItems: ProductionOrderItem[] = [
-    {
-      materialId: "mat-1",
-      materialName: "Farine de blé",
-      quantity: 50,
-      unit: "kg",
-    },
-  ];
 
   it("génère un code d'ordre de production valide (format OF-XXXXXXXX)", async () => {
     const { transaction } = await import("../../db");
     const mockTx = {
       query: vi.fn().mockResolvedValue([]),
-      queryOne: vi.fn().mockResolvedValue({ current_stock: 100 }),
+      queryOne: vi
+        .fn()
+        .mockResolvedValueOnce({
+          id: "rec-1",
+          name: "Baguette classique",
+          product_id: null,
+          product_name: null,
+        })
+        .mockResolvedValueOnce({ id: "order-1", code: "OF-ABC12345" }),
     };
     (transaction as Mock).mockImplementationOnce((cb) => cb(mockTx));
 
@@ -46,7 +45,6 @@ describe("productionService - createProductionOrder", () => {
         recipeId: "rec-1",
         recipeName: "Baguette classique",
         targetQuantity: 100,
-        items: mockItems,
         storeId: mockStoreId,
       },
       "org-1",
@@ -62,7 +60,15 @@ describe("productionService - createProductionOrder", () => {
     // Premier ordre
     const mockTx1 = {
       query: vi.fn().mockResolvedValue([]),
-      queryOne: vi.fn().mockResolvedValue({ current_stock: 100 }),
+      queryOne: vi
+        .fn()
+        .mockResolvedValueOnce({
+          id: "rec-1",
+          name: "Baguette classique",
+          product_id: null,
+          product_name: null,
+        })
+        .mockResolvedValueOnce({ id: "order-1", code: "OF-1" }),
     };
     (transaction as Mock).mockImplementationOnce((cb) => cb(mockTx1));
     const order1 = await createProductionOrder(
@@ -70,7 +76,6 @@ describe("productionService - createProductionOrder", () => {
         recipeId: "rec-1",
         recipeName: "Baguette classique",
         targetQuantity: 100,
-        items: mockItems,
         storeId: mockStoreId,
       },
       "org-1",
@@ -79,7 +84,15 @@ describe("productionService - createProductionOrder", () => {
     // Deuxième ordre
     const mockTx2 = {
       query: vi.fn().mockResolvedValue([]),
-      queryOne: vi.fn().mockResolvedValue({ current_stock: 50 }),
+      queryOne: vi
+        .fn()
+        .mockResolvedValueOnce({
+          id: "rec-1",
+          name: "Baguette classique",
+          product_id: null,
+          product_name: null,
+        })
+        .mockResolvedValueOnce({ id: "order-2", code: "OF-2" }),
     };
     (transaction as Mock).mockImplementationOnce((cb) => cb(mockTx2));
     const order2 = await createProductionOrder(
@@ -87,7 +100,6 @@ describe("productionService - createProductionOrder", () => {
         recipeId: "rec-1",
         recipeName: "Baguette classique",
         targetQuantity: 100,
-        items: mockItems,
         storeId: mockStoreId,
       },
       "org-1",
@@ -101,7 +113,17 @@ describe("productionService - createProductionOrder", () => {
   it("déduit correctement les matières premières nécessaires", async () => {
     const { transaction } = await import("../../db");
     const mockTx = {
-      query: vi.fn().mockResolvedValue([]),
+      query: vi
+        .fn()
+        .mockResolvedValueOnce([
+          {
+            quantity: 0.5,
+            unit: "kg",
+            material_id: "mat-1",
+            material_name: "Farine de blé",
+          },
+        ]) // Récupération des ingrédients de la recette
+        .mockResolvedValueOnce([]), // UPDATE stock
       queryOne: vi
         .fn()
         .mockResolvedValueOnce({
@@ -110,9 +132,9 @@ describe("productionService - createProductionOrder", () => {
           product_id: "prod-1",
           product_name: "Baguette",
         }) // 1. Récupération de la recette
-        .mockResolvedValueOnce({ id: "order-1", code: "OF-ABC12345" }) // 2. Retour de l'insertion de l'ordre de production
-        .mockResolvedValueOnce({ stock: 100 }) // 3. Récupération du stock du produit
-        .mockResolvedValueOnce({ current_stock: 100, unit: "kg" }), // 4. Récupération du stock de la matière première
+        .mockResolvedValueOnce({ id: "order-1", code: "OF-ABC12345" }) // 2. Insertion de l'ordre
+        .mockResolvedValueOnce({ stock: 100 }) // 3. Vérification du produit
+        .mockResolvedValueOnce({ current_stock: 100, unit: "kg" }), // 4. Stock matière première
     };
     (transaction as Mock).mockImplementationOnce((cb) => cb(mockTx));
 
@@ -121,13 +143,12 @@ describe("productionService - createProductionOrder", () => {
         recipeId: "rec-1",
         recipeName: "Baguette classique",
         targetQuantity: 100,
-        items: mockItems,
         storeId: mockStoreId,
       },
       "org-1",
     );
 
-    // Vérifier que le stock a été déduit : 100 - 50 = 50
+    // Vérifier que le stock a été déduit : 100 - (0.5 * 100) = 50
     expect(mockTx.query).toHaveBeenCalledWith(
       "UPDATE raw_materials SET current_stock = $1 WHERE id = $2",
       [50, "mat-1"],

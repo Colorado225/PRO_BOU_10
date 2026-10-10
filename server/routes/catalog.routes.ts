@@ -507,6 +507,8 @@ catalogRouter.post(
           totalCost: r.totalCost ?? 0,
           costPerUnit: r.costPerUnit ?? 0,
           ingredients: r.ingredients ?? [],
+          storeId,
+          organizationId,
         },
         storeId,
         organizationId,

@@ -580,7 +580,7 @@ const updateProductionStatus = (orderId: string, newStatus: ProductionStatus) =>
               source: 'production' as const,
               reference: order.code,
               recordedBy: order.bakerName,
-              storeId: order.storeId,
+              storeId: order.storeId || currentStoreId || 'store-1',
             };
           })
           .filter((m): m is NonNullable<typeof m> => m !== null)

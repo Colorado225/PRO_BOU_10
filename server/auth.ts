@@ -24,6 +24,7 @@ export interface AuthPayload {
   role: Role;
   storeId: string | null;
   organizationId: string | null;
+  email?: string;
 }
 
 /** Étend la requête Express pour y attacher l'utilisateur authentifié */
@@ -34,6 +35,7 @@ export interface AuthedRequest extends Request {
     role: Role;
     storeId: string | null;
     organizationId: string | null;
+    email?: string;
   };
 }
 
@@ -165,7 +167,7 @@ export const requireOrganization = async (
  * Helper : génère la clause SQL WHERE pour filtrer par organization_id.
  * À utiliser dans toutes les requêtes pour garantir l'isolation.
  */
-export const getOrganizationFilter = (user: AuthedRequest["user"]) => {
+export const getOrganizationFilter = (user?: AuthedRequest["user"] | null) => {
   if (!user?.organizationId) {
     throw new Error("Impossible de filtrer : utilisateur sans organisation");
   }
@@ -180,7 +182,7 @@ export const getOrganizationFilter = (user: AuthedRequest["user"]) => {
  * Helper : génère la clause SQL WHERE pour filtrer par organization_id ET store_id.
  * Combine les deux niveaux d'isolation (organisation + boutique).
  */
-export const getTenantFilters = (user: AuthedRequest["user"]) => {
+export const getTenantFilters = (user?: AuthedRequest["user"] | null) => {
   if (!user?.organizationId) {
     throw new Error("Impossible de filtrer : utilisateur sans organisation");
   }

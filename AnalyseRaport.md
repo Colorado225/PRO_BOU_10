@@ -206,11 +206,11 @@
 ```
 
 ### 🔴 PHASE 1 : STABILISATION TECHNIQUE & BUILD VERT (Priorité Immédiate)
-- [ ] **T-101** : Mettre à jour `package.json` avec `express-rate-limit`, `csurf`, `@types/csurf` et exécuter `npm install --legacy-peer-deps`.
-- [ ] **T-102** : Corriger les erreurs de typage dans `server/index.ts`, `server/migrate.ts`, `server/seeds.ts`, `server/seed.ts`, `server/mockDb.ts`, `server/routes/auth.routes.ts` et `server/routes/catalog.routes.ts`.
-- [ ] **T-103** : Corriger le typage des modèles de données dans `src/data/initialData.ts`, `src/types/bakery.ts` et `src/context/BakeryContext.tsx`.
-- [ ] **T-104** : Corriger le test unitaire `server/services/__tests__/productionService.test.ts` et les assertions de `multitenantIsolation.test.ts`.
-- [ ] **T-105** : Valider que `npm run lint` (tsc) et `npm test` s'exécutent avec **100% de succès**.
+- [x] **T-101** : Mettre à jour `package.json` avec `express-rate-limit`, `csurf`, `@types/csurf` et exécuter `npm install --legacy-peer-deps`. ✅ *(Exécuté le 10/10/2026)*
+- [x] **T-102** : Corriger les erreurs de typage dans `server/index.ts`, `server/migrate.ts`, `server/seeds.ts`, `server/seed.ts`, `server/mockDb.ts`, `server/routes/auth.routes.ts` et `server/routes/catalog.routes.ts`. ✅ *(Exécuté le 10/10/2026)*
+- [x] **T-103** : Corriger le typage des modèles de données dans `src/data/initialData.ts`, `src/types/bakery.ts` et `src/context/BakeryContext.tsx`. ✅ *(Exécuté le 10/10/2026)*
+- [x] **T-104** : Corriger le test unitaire `server/services/__tests__/productionService.test.ts` et les assertions de `multitenantIsolation.test.ts`. ✅ *(Exécuté le 10/10/2026)*
+- [x] **T-105** : Valider que `npm run lint` (tsc) et `npm test` s'exécutent avec **100% de succès**. ✅ *(93/93 tests réussis)*
 
 ### 🟡 PHASE 2 : ROBUSTESSE MULTI-TENANT & UNIFICATION OFFLINE (Semaine 1)
 - [ ] **T-201** : Supprimer le fichier redondant `src/services/offlineQueue.ts` et consolider `src/services/syncQueue.ts` avec support complet des transactions offline (ventes, clôtures, pertes).

@@ -81,8 +81,9 @@ function getData(): MockDatabase {
   if (!_data) {
     try {
       if (existsSync(DATA_FILE)) {
-        _data = JSON.parse(readFileSync(DATA_FILE, "utf-8"));
-        console.log(`[mockDb] 📦 Base locale chargée : ${_data.users.length} utilisateurs`);
+        const parsed = JSON.parse(readFileSync(DATA_FILE, "utf-8")) as MockDatabase;
+        _data = parsed;
+        console.log(`[mockDb] 📦 Base locale chargée : ${parsed.users?.length ?? 0} utilisateurs`);
       }
     } catch { /* ignore */ }
     if (!_data) {

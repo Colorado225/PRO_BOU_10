@@ -239,7 +239,7 @@ describe("Isolation multi-tenant", () => {
       const attackerOrg = "org-A";
       const targetRecord = "record-org-B";
 
-      mockQuery.mockResolvedValueOnce({ rowCount: 0 });
+      mockQuery.mockResolvedValueOnce([]);
 
       const { query } = await import("../../db");
       const result = await query(
@@ -248,7 +248,7 @@ describe("Isolation multi-tenant", () => {
       );
 
       // Aucune ligne modifiée car l'organization_id ne correspond pas
-      expect(result.rowCount).toBe(0);
+      expect(result.length).toBe(0);
     });
   });
 

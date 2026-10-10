@@ -155,27 +155,34 @@ function buildUserResponse(user: {
   };
 }
 
+function getCookieSecurity(res: any) {
+  const forwardedProto = res.req?.headers?.["x-forwarded-proto"];
+  const host = res.req?.headers?.host || "";
+  const isHttps = forwardedProto === "https" || res.req?.protocol === "https";
+  const isProd = process.env.NODE_ENV === "production";
+  const isNonLocal = Boolean(host && !host.startsWith("localhost"));
+  const isSecure = Boolean(isHttps || isProd || isNonLocal);
+  return {
+    secure: isSecure,
+    sameSite: isSecure ? ("none" as const) : ("lax" as const),
+  };
+}
+
 /** Pose les cookies de session (access + refresh tokens). */
 function setSessionCookies(res: any, accessToken: string, refreshToken: string) {
-  // Détecter HTTPS : header x-forwarded-proto (proxy) ou protocole direct
-  // En production et dans les previews (Arena, etc.), on est toujours en HTTPS
-  const forwardedProto = res.req?.headers?.["x-forwarded-proto"];
-  const isSecure = forwardedProto === "https" || 
-                   res.req?.protocol === "https" || 
-                   process.env.NODE_ENV === "production" ||
-                   (res.req?.headers?.host && !res.req.headers.host.startsWith("localhost"));
+  const { secure, sameSite } = getCookieSecurity(res);
   
   res.cookie("access_token", accessToken, {
     httpOnly: true,
-    secure: isSecure,
-    sameSite: isSecure ? "none" : "lax",
+    secure,
+    sameSite,
     maxAge: 24 * 60 * 60 * 1000, // 24h
     path: "/",
   });
   res.cookie("refresh_token", refreshToken, {
     httpOnly: true,
-    secure: isSecure,
-    sameSite: isSecure ? "none" : "lax",
+    secure,
+    sameSite,
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
     path: "/",
   });
@@ -278,16 +285,11 @@ authRouter.post("/register", async (req, res) => {
       storeId: "store-1",
       organizationId: newMockUser.organization_id,
     });
+    const cookieSec = getCookieSecurity(res);
     res.cookie("access_token", token, {
       httpOnly: true,
-      secure: res.req?.headers?.["x-forwarded-proto"] === "https" || 
-                   res.req?.protocol === "https" || 
-                   process.env.NODE_ENV === "production" ||
-                   (res.req?.headers?.host && !res.req.headers.host.startsWith("localhost")),
-      sameSite: (res.req?.headers?.["x-forwarded-proto"] === "https" || 
-                   res.req?.protocol === "https" || 
-                   process.env.NODE_ENV === "production" ||
-                   (res.req?.headers?.host && !res.req.headers.host.startsWith("localhost"))) ? "none" : "lax",
+      secure: cookieSec.secure,
+      sameSite: cookieSec.sameSite,
       maxAge: 24 * 60 * 60 * 1000,
       path: "/",
     });
@@ -425,16 +427,11 @@ authRouter.post("/verify-email", async (req, res) => {
       storeId: mockUser.store_id,
       organizationId: mockUser.organization_id,
     });
+    const cookieSec = getCookieSecurity(res);
     res.cookie("access_token", token, {
       httpOnly: true,
-      secure: res.req?.headers?.["x-forwarded-proto"] === "https" || 
-                   res.req?.protocol === "https" || 
-                   process.env.NODE_ENV === "production" ||
-                   (res.req?.headers?.host && !res.req.headers.host.startsWith("localhost")),
-      sameSite: (res.req?.headers?.["x-forwarded-proto"] === "https" || 
-                   res.req?.protocol === "https" || 
-                   process.env.NODE_ENV === "production" ||
-                   (res.req?.headers?.host && !res.req.headers.host.startsWith("localhost"))) ? "none" : "lax",
+      secure: cookieSec.secure,
+      sameSite: cookieSec.sameSite,
       maxAge: 24 * 60 * 60 * 1000,
       path: "/",
     });
@@ -667,16 +664,11 @@ authRouter.post("/login", async (req, res) => {
       organizationId: mockUser.organization_id,
     });
     // En mode mock, on pose juste l'access token (pas de refresh token en DB)
+    const cookieSec = getCookieSecurity(res);
     res.cookie("access_token", token, {
       httpOnly: true,
-      secure: res.req?.headers?.["x-forwarded-proto"] === "https" || 
-                   res.req?.protocol === "https" || 
-                   process.env.NODE_ENV === "production" ||
-                   (res.req?.headers?.host && !res.req.headers.host.startsWith("localhost")),
-      sameSite: (res.req?.headers?.["x-forwarded-proto"] === "https" || 
-                   res.req?.protocol === "https" || 
-                   process.env.NODE_ENV === "production" ||
-                   (res.req?.headers?.host && !res.req.headers.host.startsWith("localhost"))) ? "none" : "lax",
+      secure: cookieSec.secure,
+      sameSite: cookieSec.sameSite,
       maxAge: 24 * 60 * 60 * 1000,
       path: "/",
     });
@@ -1146,16 +1138,11 @@ authRouter.post("/refresh", async (req, res) => {
         storeId: payload.storeId,
         organizationId: payload.organizationId,
       });
+      const cookieSec = getCookieSecurity(res);
       res.cookie("access_token", newToken, {
         httpOnly: true,
-        secure: res.req?.headers?.["x-forwarded-proto"] === "https" || 
-                   res.req?.protocol === "https" || 
-                   process.env.NODE_ENV === "production" ||
-                   (res.req?.headers?.host && !res.req.headers.host.startsWith("localhost")),
-        sameSite: (res.req?.headers?.["x-forwarded-proto"] === "https" || 
-                   res.req?.protocol === "https" || 
-                   process.env.NODE_ENV === "production" ||
-                   (res.req?.headers?.host && !res.req.headers.host.startsWith("localhost"))) ? "none" : "lax",
+        secure: cookieSec.secure,
+        sameSite: cookieSec.sameSite,
         maxAge: 24 * 60 * 60 * 1000,
         path: "/",
       });

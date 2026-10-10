@@ -2,7 +2,7 @@
  * Script de seeds : insère des données fictives dans la base Neon
  * Usage : npm run db:seed
  */
-import { pool } from "./db";
+import { pool, query } from "./db";
 import { randomUUID } from "node:crypto";
 
 const runSeeds = async () => {
@@ -10,7 +10,7 @@ const runSeeds = async () => {
 
   // 1. Insérer un magasin (Boulangerie Abidjan - Cocody)
   const storeId = randomUUID();
-  await pool.query(
+  await query(
     `
     INSERT INTO stores (id, name, location, phone, manager_name, is_main)
     VALUES ($1, 'Boulangerie du Plateau', 'Rue du Commerce, Cocody, Abidjan', '+2250708091011', 'Kouassi Konan', true)
@@ -22,7 +22,7 @@ const runSeeds = async () => {
 
   // 2. Insérer un utilisateur caissier (correspond aux rôles du schema)
   const userId = randomUUID();
-  await pool.query(
+  await query(
     `
     INSERT INTO users (id, name, email, password_hash, role, store_id, is_active)
     VALUES ($1, 'Kouassi Konan', 'caissier@boulangerie.ci', '$2a$10$dummyHash', 'caissier', $2, true)
@@ -33,7 +33,7 @@ const runSeeds = async () => {
   console.log(`[seeds] ✅ Utilisateur caissier créé : ${userId}`);
 
   // 3. Insérer les paramètres de l'entreprise (conformité DGI)
-  await pool.query(`
+  await query(`
     INSERT INTO company_settings (id, establishment_name, rccm, taxpayer_account, default_vat_rate, currency)
     VALUES ('default', 'Boulangerie du Plateau SARL', 'CI-ABJ-2024-12345', '0001234567', 18, 'XOF')
     ON CONFLICT (id) DO NOTHING;
@@ -56,7 +56,7 @@ const runSeeds = async () => {
   for (const rm of rawMaterials) {
     const id = randomUUID();
     rawMaterialIds[rm.name] = id;
-    await pool.query(
+    await query(
       `
       INSERT INTO raw_materials (id, code, name, category, unit, unit_cost, current_stock, min_stock_alert, location)
       VALUES ($1, $2, $3, 'ingredient', $4, $5, 100, 20, 'Cocody, Abidjan')
@@ -144,7 +144,7 @@ const runSeeds = async () => {
   for (const product of products) {
     const id = randomUUID();
     productIds[product.name] = id;
-    await pool.query(
+    await query(
       `
       INSERT INTO products (id, sku, name, category, price, cost_price, vat_rate, stock, min_stock, unit, barcode, store_id, is_active)
       VALUES ($1, $2, $3, $4, $5, $6, 18, $7, 10, 'unite', $8, $9, true)
@@ -210,7 +210,7 @@ const runSeeds = async () => {
     recipeIds[recipe.name] = recipeId;
     const productId = productIds[recipe.productName];
 
-    await pool.query(
+    await query(
       `
       INSERT INTO recipes (id, name, product_id, product_name, output_yield, output_unit, preparation_time_min, total_cost, cost_per_unit)
       VALUES ($1, $2, $3, $4, 10, 'unite', 45, $5, $6)
@@ -230,7 +230,7 @@ const runSeeds = async () => {
     for (const ing of recipe.ingredients) {
       const rmId = rawMaterialIds[ing.name];
       if (rmId) {
-        await pool.query(
+        await query(
           `
           INSERT INTO recipe_ingredients (recipe_id, material_id, material_name, quantity, unit, cost)
           VALUES ($1, $2, $3, $4, $5, $6)
@@ -243,7 +243,9 @@ const runSeeds = async () => {
   console.log("[seeds] ✅ Recettes créées");
   console.log("[seeds] ✅ Produits finis créés");
 
-  await pool.end();
+  if (pool) {
+    await pool.end();
+  }
   console.log(
     "[seeds] 🎉 Toutes les données fictives ont été insérées avec succès !",
   );

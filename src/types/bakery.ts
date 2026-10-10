@@ -83,10 +83,10 @@ export interface Recipe {
   instructions: string[];
   totalCost: number;
   costPerUnit: number;
-  storeId: string;
-  organizationId: string;
-  createdAt: string;
-  updatedAt: string;
+  storeId?: string;
+  organizationId?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export type ProductionStatus =
@@ -111,11 +111,11 @@ export interface ProductionOrder {
   completedTime?: string;
   bakerName: string;
   shift: "Matin (04h30)" | "Midi (11h00)" | "Soir (16h00)";
-  storeId: string;
-  organizationId: string;
+  storeId?: string;
+  organizationId?: string;
   notes?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CartItem {

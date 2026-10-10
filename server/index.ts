@@ -240,8 +240,8 @@ app.use("/api/auth", authRouter);
 
 // Route pour récupérer le token CSRF (exposée uniquement pour le frontend) - doit être APRÈS le middleware csurf
 app.get("/api/csrf-token", (req, res) => {
-  // req.csrfToken() est maintenant disponible car csurf est déjà initialisé
-  const token = req.csrfToken();
+  // req.csrfToken() est disponible quand csurf est initialisé
+  const token = typeof (req as any).csrfToken === "function" ? (req as any).csrfToken() : "";
   res.json({ csrfToken: token });
 });
 

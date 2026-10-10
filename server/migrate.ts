@@ -46,10 +46,9 @@ async function getAppliedMigrations(): Promise<string[]> {
     const result = await query<{ id: string; success: boolean }>(
       "SELECT id, success FROM migrations ORDER BY id ASC",
     );
-    // @ts-ignore - query retourne toujours { rows: ... } comme dans tout le codebase
-    return result.rows
-      .filter((r: { id: string; success: boolean }) => r.success)
-      .map((r: { id: string }) => r.id);
+    return result
+      .filter((r) => r.success)
+      .map((r) => r.id);
   } catch (err) {
     // La table migrations n'existe pas encore
     return [];
@@ -93,16 +92,16 @@ const run = async () => {
 
     try {
       // Exécuter la migration dans une transaction
-      await pool.query("BEGIN");
-      await pool.query(migration.sql);
+      await query("BEGIN");
+      await query(migration.sql);
       await recordMigration(migration.id, migration.name, true);
-      await pool.query("COMMIT");
+      await query("COMMIT");
 
       console.log(
         `[db] ✅ Migration ${migration.id}_${migration.name} appliquée avec succès`,
       );
     } catch (err) {
-      await pool.query("ROLLBACK");
+      await query("ROLLBACK");
       await recordMigration(migration.id, migration.name, false);
       console.error(
         `[db] ❌ Échec de la migration ${migration.id}_${migration.name} :`,
@@ -112,7 +111,9 @@ const run = async () => {
     }
   }
 
-  await pool.end();
+  if (pool) {
+    await pool.end();
+  }
   console.log("[db] 🎉 Toutes les migrations ont été traitées !");
 };
 

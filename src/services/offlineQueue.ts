@@ -197,13 +197,13 @@ export class OfflineQueueManager {
   private async processAction(action: PendingAction): Promise<void> {
     switch (action.type) {
       case OfflineActionType.CREATE_SALE:
-        await api.post("/sales", action.data);
+        await api.post("/api/operations/sales", action.data);
         break;
       case OfflineActionType.UPDATE_STOCK:
-        await api.patch(`/stock/${action.data.id}`, action.data);
+        await api.post("/api/operations/inventory/adjust", action.data);
         break;
       case OfflineActionType.ADD_CASH_TRANSACTION:
-        await api.post("/cash/transactions", action.data);
+        await api.post("/api/operations/cash-transactions", action.data);
         break;
       default:
         throw new Error(`Type d'action inconnu: ${action.type}`);
