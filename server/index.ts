@@ -10,6 +10,8 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import csurf from "csurf";
+import rateLimit from "express-rate-limit";
 import crypto from "crypto";
 import { config } from "./config";
 import { requireAuth } from "./auth";
@@ -22,8 +24,74 @@ import { reportsRouter } from "./routes/reports.routes";
 const app = express();
 
 app.use(cors({ origin: config.corsOrigin, credentials: true }));
-// Parser les cookies pour accéder à req.cookies (utilisé pour le token HttpOnly)
+// Parser les cookies pour accéder à req.cookies (utilisé pour le token HttpOnly et CSRF)
 app.use(cookieParser());
+
+// 🔒 Rate limiting global (SEC-004) - Protection générale contre les attaques DDoS
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 500, // Limite chaque IP à 500 requêtes par 15min
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Trop de requêtes, réessayez plus tard." },
+});
+
+// 🔒 Rate limiting strict sur les routes d'authentification (contre brute-force)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // Seulement 20 tentatives de connexion/inscription par IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: "Trop de tentatives d'authentification, réessayez dans 15min.",
+  },
+});
+
+// Appliquer le rate limiting global
+app.use(globalLimiter);
+
+// Configuration CSRF protection (SEC-005)
+const isSecure = process.env.NODE_ENV === "production";
+const csrfProtection = csurf({
+  cookie: {
+    httpOnly: true,
+    secure: isSecure,
+    sameSite: isSecure ? "strict" : "lax",
+    maxAge: 24 * 60 * 60 * 1000, // 24h
+    path: "/",
+  },
+  // Exclure les routes qui ne nécessitent pas de protection CSRF
+  ignoreMethods: ["GET", "HEAD", "OPTIONS"],
+});
+
+// Appliquer la protection CSRF à toutes les routes sauf exceptions
+app.use((req, res, next) => {
+  // Exceptions : webhooks, SSE, health, routes d'auth publiques (appelées avant session)
+  if (
+    req.path.startsWith("/api/webhooks") ||
+    req.path.startsWith("/api/sse/") ||
+    req.path === "/api/health" ||
+    req.path === "/api/auth/login" ||
+    req.path === "/api/auth/register" ||
+    req.path === "/api/auth/verify-email" ||
+    req.path === "/api/auth/resend-verification" ||
+    req.path === "/api/auth/forgot-password" ||
+    req.path === "/api/auth/reset-password" ||
+    req.path === "/api/auth/refresh" ||
+    req.path === "/api/csrf-token" // Exclure la route qui fournit le token lui-même
+  ) {
+    return next();
+  }
+  csrfProtection(req, res, next);
+});
+
+// Appliquer le rate limiting strict sur les routes d'authentification
+app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/register", authLimiter);
+app.use("/api/auth/verify-email", authLimiter);
+app.use("/api/auth/forgot-password", authLimiter);
+app.use("/api/auth/reset-password", authLimiter);
+
 // Route webhook sans vérification d'authentification (requis par les APIs Mobile Money)
 app.use(
   "/api/webhooks",
@@ -170,6 +238,13 @@ app.get("/api/health", (_req, res) => {
 // Routes d'authentification : /login, /register, /verify-email, /resend-verification, /forgot-password, /reset-password, /refresh sont publiques
 app.use("/api/auth", authRouter);
 
+// Route pour récupérer le token CSRF (exposée uniquement pour le frontend) - doit être APRÈS le middleware csurf
+app.get("/api/csrf-token", (req, res) => {
+  // req.csrfToken() est maintenant disponible car csurf est déjà initialisé
+  const token = req.csrfToken();
+  res.json({ csrfToken: token });
+});
+
 // Middleware global d'authentification : TOUTES les autres routes API nécessitent une authentification
 app.use((req, res, next) => {
   // Exclusions : webhooks, et les routes d'auth déjà traitées
@@ -183,7 +258,8 @@ app.use((req, res, next) => {
     req.path === "/api/auth/resend-verification" ||
     req.path === "/api/auth/forgot-password" ||
     req.path === "/api/auth/reset-password" ||
-    req.path === "/api/auth/refresh"
+    req.path === "/api/auth/refresh" ||
+    req.path === "/api/csrf-token"
   ) {
     return next();
   }
