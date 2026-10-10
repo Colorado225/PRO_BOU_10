@@ -51,14 +51,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
+    // La session principale est portée par le cookie HttpOnly posé par l'API.
+    // Il faut donc restaurer /me même quand aucun token n'est présent dans le storage
+    // (notamment après la vérification d'un nouvel e-mail).
     const token = safeStorage.getItem('auth_token');
-    if (!token) {
-      setIsRestoring(false);
-      return;
-    }
+    const headers: HeadersInit = token
+      ? { 'Authorization': `Bearer ${token}` }
+      : {};
 
     fetch('/api/auth/me', {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers,
+      credentials: 'include',
     })
       .then(res => {
         if (!res.ok) {
@@ -83,6 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ email, password }),
     });
 
