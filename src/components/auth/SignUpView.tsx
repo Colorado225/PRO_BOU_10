@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { SignUp } from '@clerk/clerk-react';
 import {
   Wheat,
   Lock,
@@ -51,6 +53,8 @@ const POINTS_DE_VENTE = [
  * Étape 2 : informations de l'établissement (nom, type, ville, points de vente).
  */
 export const SignUpView: React.FC<SignUpViewProps> = ({ onNavigateToLogin, onRegistered }) => {
+  const { isClerkEnabled } = useAuth();
+  const [useClerkView, setUseClerkView] = useState<boolean>(isClerkEnabled);
   const [step, setStep] = useState<1 | 2>(1);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -276,34 +280,52 @@ export const SignUpView: React.FC<SignUpViewProps> = ({ onNavigateToLogin, onReg
             </span>
           </div>
 
-          {/* Indicateur d'étapes */}
-          <div className="flex items-center gap-3 mb-8">
-            <div className="flex items-center gap-2">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step >= 1 ? 'bg-amber-500 text-white' : 'bg-stone-200 text-stone-500'}`}>
-                {step > 1 ? <CheckCircle2 className="w-4 h-4" /> : '1'}
-              </div>
-              <span className={`text-xs font-semibold ${step === 1 ? 'text-stone-900' : 'text-stone-400'}`}>Votre compte</span>
-            </div>
-            <div className={`flex-1 h-px ${step >= 2 ? 'bg-amber-400' : 'bg-stone-200'} transition-colors`} />
-            <div className="flex items-center gap-2">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step >= 2 ? 'bg-amber-500 text-white' : 'bg-stone-200 text-stone-500'}`}>
-                2
-              </div>
-              <span className={`text-xs font-semibold ${step === 2 ? 'text-stone-900' : 'text-stone-400'}`}>Votre établissement</span>
-            </div>
-          </div>
-
-          {/* Messages d'erreur */}
-          {error && (
-            <div className="mb-5 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm animate-in fade-in duration-200">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{error}</span>
+          {isClerkEnabled && (
+            <div className="mb-5">
+              <button
+                type="button"
+                onClick={() => setUseClerkView(!useClerkView)}
+                className="w-full py-2.5 px-4 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-900 font-semibold text-xs flex items-center justify-center gap-2 transition-all"
+              >
+                <span>{useClerkView ? 'Passer au formulaire classique' : '🔒 Créer un compte avec Clerk SSO / Email'}</span>
+              </button>
             </div>
           )}
 
-          {/* ════════════ ÉTAPE 1 : VOTRE COMPTE ════════════ */}
-          {step === 1 && (
-            <form onSubmit={handleNextStep} className="space-y-5">
+          {isClerkEnabled && useClerkView ? (
+            <div className="flex justify-center my-4">
+              <SignUp routing="hash" />
+            </div>
+          ) : (
+            <>
+              {/* Indicateur d'étapes */}
+              <div className="flex items-center gap-3 mb-8">
+                <div className="flex items-center gap-2">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step >= 1 ? 'bg-amber-500 text-white' : 'bg-stone-200 text-stone-500'}`}>
+                    {step > 1 ? <CheckCircle2 className="w-4 h-4" /> : '1'}
+                  </div>
+                  <span className={`text-xs font-semibold ${step === 1 ? 'text-stone-900' : 'text-stone-400'}`}>Votre compte</span>
+                </div>
+                <div className={`flex-1 h-px ${step >= 2 ? 'bg-amber-400' : 'bg-stone-200'} transition-colors`} />
+                <div className="flex items-center gap-2">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step >= 2 ? 'bg-amber-500 text-white' : 'bg-stone-200 text-stone-500'}`}>
+                    2
+                  </div>
+                  <span className={`text-xs font-semibold ${step === 2 ? 'text-stone-900' : 'text-stone-400'}`}>Votre établissement</span>
+                </div>
+              </div>
+
+              {/* Messages d'erreur */}
+              {error && (
+                <div className="mb-5 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm animate-in fade-in duration-200">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {/* ════════════ ÉTAPE 1 : VOTRE COMPTE ════════════ */}
+              {step === 1 && (
+                <form onSubmit={handleNextStep} className="space-y-5">
               <div className="mb-2">
                 <h2 className="text-2xl font-black text-stone-900 tracking-tight">
                   Créez votre espace professionnel.
@@ -548,6 +570,8 @@ export const SignUpView: React.FC<SignUpViewProps> = ({ onNavigateToLogin, onReg
                 </p>
               </div>
             </form>
+          )}
+          </>
           )}
 
           {/* Lien secondaire */}

@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { BakeryProvider, useBakery } from './context/BakeryContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ClerkProviderWrapper } from './context/ClerkProviderWrapper';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { LoginView } from './components/auth/LoginView';
 import { SignUpView } from './components/auth/SignUpView';
@@ -190,9 +191,11 @@ const AppContent: React.FC = () => {
 export default function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
+      <ClerkProviderWrapper>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </ClerkProviderWrapper>
     </ErrorBoundary>
   );
 }

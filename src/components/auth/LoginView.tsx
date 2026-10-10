@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { SignIn } from '@clerk/clerk-react';
 import {
   Wheat,
   Lock,
@@ -20,15 +21,16 @@ interface LoginViewProps {
 }
 
 /**
- * Page de connexion — utilise AuthContext.login() qui met à jour l'état user directement.
+ * Page de connexion — supporte Clerk SSO / Authentification moderne et le mode démo / identifiants locaux.
  */
 export const LoginView: React.FC<LoginViewProps> = ({ onNavigateToSignUp, onNavigateToForgotPassword }) => {
-  const { login, demoLogin } = useAuth();
+  const { login, demoLogin, isClerkEnabled } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [useClerkView, setUseClerkView] = useState<boolean>(isClerkEnabled);
 
   const doLogin = async (loginEmail: string, loginPassword: string) => {
     setIsLoading(true);
@@ -151,64 +153,84 @@ export const LoginView: React.FC<LoginViewProps> = ({ onNavigateToSignUp, onNavi
             🚀 Accéder au dashboard (démo)
           </button>
 
-          <div className="flex items-center gap-4 mb-5">
-            <div className="flex-1 h-px bg-stone-200" />
-            <span className="text-xs text-stone-400 font-medium">ou connectez-vous</span>
-            <div className="flex-1 h-px bg-stone-200" />
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-semibold text-stone-700 mb-1.5">Adresse e-mail</label>
-              <div className="relative">
-                <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nom@votreboulangerie.com"
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl pl-10 pr-4 py-3 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-stone-700 mb-1.5">Mot de passe</label>
-              <div className="relative">
-                <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Saisissez votre mot de passe"
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl pl-10 pr-11 py-3 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div></div>
-              <button type="button" onClick={onNavigateToForgotPassword} className="text-sm font-semibold text-amber-600 hover:text-amber-700">
-                Mot de passe oublié ?
+          {isClerkEnabled && (
+            <div className="mb-5">
+              <button
+                type="button"
+                onClick={() => setUseClerkView(!useClerkView)}
+                className="w-full py-2.5 px-4 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-900 font-semibold text-xs flex items-center justify-center gap-2 transition-all"
+              >
+                <span>{useClerkView ? 'Passer au formulaire classique' : '🔒 Se connecter avec Clerk SSO / Email'}</span>
               </button>
             </div>
+          )}
 
-            <button
-              type="submit"
-              disabled={isLoading || !email || !password}
-              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-sm tracking-wide flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
-            >
-              <LogIn className="w-4 h-4" />
-              <span>{isLoading ? 'Connexion en cours…' : 'Se connecter'}</span>
-            </button>
-          </form>
+          {isClerkEnabled && useClerkView ? (
+            <div className="flex justify-center my-4">
+              <SignIn routing="hash" />
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-4 mb-5">
+                <div className="flex-1 h-px bg-stone-200" />
+                <span className="text-xs text-stone-400 font-medium">ou connectez-vous</span>
+                <div className="flex-1 h-px bg-stone-200" />
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-stone-700 mb-1.5">Adresse e-mail</label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="nom@votreboulangerie.com"
+                      className="w-full bg-stone-50 border border-stone-200 rounded-xl pl-10 pr-4 py-3 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-stone-700 mb-1.5">Mot de passe</label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Saisissez votre mot de passe"
+                      className="w-full bg-stone-50 border border-stone-200 rounded-xl pl-10 pr-11 py-3 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div></div>
+                  <button type="button" onClick={onNavigateToForgotPassword} className="text-sm font-semibold text-amber-600 hover:text-amber-700">
+                    Mot de passe oublié ?
+                  </button>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading || !email || !password}
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-sm tracking-wide flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>{isLoading ? 'Connexion en cours…' : 'Se connecter'}</span>
+                </button>
+              </form>
+            </>
+          )}
 
           <div className="flex items-center gap-4 my-7">
             <div className="flex-1 h-px bg-stone-200" />

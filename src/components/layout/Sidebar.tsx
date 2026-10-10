@@ -1,5 +1,6 @@
 import React from 'react';
 import { useBakery } from '../../context/BakeryContext';
+import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -15,6 +16,9 @@ import {
   Cake,
   Bot,
   Settings,
+  LogOut,
+  User as UserIcon,
+  Shield,
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -27,6 +31,8 @@ export const Sidebar: React.FC = () => {
     isMobileMenuOpen,
     setIsMobileMenuOpen,
   } = useBakery();
+
+  const { user, logout, isClerkEnabled } = useAuth();
 
   const handleSelectTab = (id: string) => {
     setActiveTab(id);
@@ -221,16 +227,40 @@ export const Sidebar: React.FC = () => {
           })}
         </div>
 
-        {/* Footer Info Box - version mobile optimisée */}
-        <div className="p-4 md:p-3 border-t border-stone-800/80 bg-stone-950/40">
-          <div className="p-4 md:p-3 rounded-xl bg-stone-800/60 border border-stone-700/60">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm md:text-xs font-semibold text-stone-300">Mode Connecté</span>
-              <span className="w-3 h-3 md:w-2 md:h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        {/* Footer Info Box - Profil Utilisateur & Mode */}
+        <div className="p-4 md:p-3 border-t border-stone-800/80 bg-stone-950/40 space-y-2">
+          {user && (
+            <div className="p-2.5 rounded-xl bg-stone-850/80 border border-stone-750 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                  <UserIcon className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-stone-100 truncate">{user.name}</p>
+                  <p className="text-[10px] text-amber-400/90 font-medium capitalize flex items-center gap-1">
+                    <Shield className="w-2.5 h-2.5" />
+                    <span>{user.role}</span>
+                    {isClerkEnabled && <span className="text-[8px] bg-purple-500/20 text-purple-300 px-1 rounded">Clerk</span>}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={logout}
+                title="Déconnexion"
+                className="p-1.5 hover:bg-rose-950/50 text-stone-400 hover:text-rose-400 rounded-lg transition-colors shrink-0"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
-            <p className="text-xs md:text-[11px] text-stone-400">Synchronisé • Caisse Prête</p>
-            <div className="mt-3 md:mt-2 pt-3 md:pt-2 border-t border-stone-700/60 flex items-center justify-between text-xs md:text-[11px] text-stone-400">
-              <span>Devise:</span>
+          )}
+
+          <div className="p-3 md:p-2.5 rounded-xl bg-stone-800/40 border border-stone-700/40">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[11px] font-semibold text-stone-300">Mode Connecté</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            </div>
+            <div className="flex items-center justify-between text-[10px] text-stone-400">
+              <span>Devise :</span>
               <span className="font-bold text-amber-400">FCFA (XOF)</span>
             </div>
           </div>

@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { safeStorage } from '../utils/safeStorage';
+import { isClerkConfigured } from './ClerkProviderWrapper';
+import { ClerkBridge, type MappedUser } from './ClerkBridge';
 
-interface User {
+export interface User {
   id: string;
   name: string;
   email: string;
@@ -14,6 +16,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isRestoring: boolean;
+  isClerkEnabled: boolean;
   login: (email: string, password: string) => Promise<void>;
   demoLogin: () => void;
   logout: () => void;
@@ -36,10 +39,36 @@ const DEMO_USER: User = {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isRestoring, setIsRestoring] = useState(true);
+  const isClerk = isClerkConfigured();
   const restoredRef = useRef(false);
 
-  // Restaurer la session au démarrage (une seule fois)
+  // Synchronisation depuis Clerk lorsque Clerk est configuré
+  const handleClerkStateChange = useCallback((mappedUser: MappedUser | null, token: string | null, isLoaded: boolean) => {
+    if (!isLoaded) {
+      setIsRestoring(true);
+      return;
+    }
+
+    if (mappedUser && token) {
+      safeStorage.setItem('auth_token', token);
+      safeStorage.removeItem('auth_mode');
+      setUser(mappedUser);
+      setIsRestoring(false);
+    } else {
+      // Pas connecté dans Clerk -> vérifier si un mode démo ou session locale existe
+      const mode = safeStorage.getItem('auth_mode');
+      if (mode === 'demo') {
+        setUser(DEMO_USER);
+      } else {
+        setUser(null);
+      }
+      setIsRestoring(false);
+    }
+  }, []);
+
+  // Restaurer la session au démarrage (mode local ou fallback sans Clerk)
   useEffect(() => {
+    if (isClerk) return; // Si Clerk est actif, ClerkBridge gère la restauration
     if (restoredRef.current) return;
     restoredRef.current = true;
 
@@ -77,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .finally(() => {
         setIsRestoring(false);
       });
-  }, []);
+  }, [isClerk]);
 
   const login = useCallback(async (email: string, password: string) => {
     const response = await fetch('/api/auth/login', {
@@ -126,7 +155,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 
   return (
-    <AuthContext.Provider value={{ user, isRestoring, login, demoLogin, logout, can }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isRestoring,
+        isClerkEnabled: isClerk,
+        login,
+        demoLogin,
+        logout,
+        can,
+      }}
+    >
+      {isClerk && <ClerkBridge onClerkStateChange={handleClerkStateChange} />}
       {children}
     </AuthContext.Provider>
   );

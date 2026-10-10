@@ -11,6 +11,7 @@
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { verifyToken } from "@clerk/backend";
 import type { Request, Response, NextFunction } from "express";
 import { config } from "./config";
 
@@ -88,8 +89,34 @@ export const requireAuth = async (
   }
 
   try {
-    // Vérifier la signature et l'expiration du token
-    const payload = jwt.verify(token, config.jwtSecret) as AuthPayload;
+    let payload: AuthPayload | null = null;
+
+    // 1. Tenter la validation Clerk si une clé secrète est configurée
+    if (config.clerkSecretKey) {
+      try {
+        const clerkVerified = await verifyToken(token, {
+          secretKey: config.clerkSecretKey,
+        });
+        if (clerkVerified) {
+          const claims = clerkVerified as any;
+          payload = {
+            userId: claims.sub,
+            name: claims.name || claims.email || "Utilisateur Clerk",
+            role: (claims.metadata?.role as Role) || (claims.public_metadata?.role as Role) || "gerant",
+            storeId: (claims.metadata?.storeId as string) || "store-1",
+            organizationId: (claims.org_id as string) || (claims.metadata?.organizationId as string) || "org-1",
+            email: claims.email,
+          };
+        }
+      } catch {
+        // En cas d'échec Clerk, bascule automatique sur le JWT local
+      }
+    }
+
+    // 2. Si non validé par Clerk, vérifier avec le JWT local de l'ERP
+    if (!payload) {
+      payload = jwt.verify(token, config.jwtSecret) as AuthPayload;
+    }
 
     // Attacher l'utilisateur à la requête
     req.user = {
@@ -98,6 +125,7 @@ export const requireAuth = async (
       role: payload.role,
       storeId: payload.storeId,
       organizationId: payload.organizationId,
+      email: payload.email,
     };
 
     next();
