@@ -313,9 +313,9 @@ app.use(
   },
 );
 
-app.listen(config.port, () => {
+app.listen(config.port, "0.0.0.0", () => {
   console.log(
-    `[api] BoulangeriePro API à l'écoute sur http://localhost:${config.port} (${config.nodeEnv})`,
+    `[api] BoulangeriePro API à l'écoute sur http://0.0.0.0:${config.port} (${config.nodeEnv})`,
   );
 });
 
