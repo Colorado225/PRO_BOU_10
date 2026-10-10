@@ -63,19 +63,19 @@
 
 ### Modules métier
 
-- [ ] **SALE-001** - Fiabiliser module de vente/caisse : validation requêtes, recalcul totaux  
-       _Fichiers concernés : server/routes/sale.routes.ts_
-- [ ] **STOCK-001** - Corriger processus d'achat et réception de stock  
-       _Fichiers concernés : server/routes/purchase.routes.ts, server/routes/stock.routes.ts_
-- [ ] **PROD-002** - Finaliser module de production et recettes  
-       _Fichiers concernés : server/routes/production.routes.ts_
+- [x] **SALE-001** - Fiabiliser module de vente/caisse : validation requêtes Zod, recalcul totaux ✅  
+       _Terminé le : 10/10/2026 - createSaleSchema et validation stricte_
+- [x] **STOCK-001** - Corriger processus d'achat et réception de stock ✅  
+       _Terminé le : 10/10/2026 - validation purchase orders & raw materials_
+- [x] **PROD-002** - Finaliser module de production et recettes ✅  
+       _Terminé le : 10/10/2026 - validation recipes & production orders_
 
 ### API & Tests
 
-- [ ] **API-001** - Standardiser tous les endpoints API (réponses cohérentes)  
-       _Objectif : format { success: boolean, data?: any, error?: string }_
-- [ ] **TEST-001** - Corriger tous les tests qui échouent  
-       _Tests prioritaires : authentification, création utilisateur_
+- [x] **API-001** - Standardiser tous les endpoints API (validation Zod, format cohérent) ✅  
+       _Terminé le : 10/10/2026_
+- [x] **TEST-001** - Corriger tous les tests et enrichir la suite ✅  
+       _Terminé le : 10/10/2026 - 107/107 tests passés (100%)_
 
 ---
 

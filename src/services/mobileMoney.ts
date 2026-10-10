@@ -142,7 +142,9 @@ export class MobileMoneyManager {
    * Traiter une mise à jour en temps réel reçue via SSE
    */
   private async handleRealTimeUpdate(update: any): Promise<void> {
+    if (!update || update.type === "CONNECTED") return;
     const { operator, transactionId, status, reason } = update;
+    if (!operator || !transactionId) return;
 
     // Traduire le statut de l'opérateur vers notre format webhook
     const webhookPayload = {

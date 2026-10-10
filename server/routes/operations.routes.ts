@@ -38,6 +38,14 @@ import {
   getTenantFilters,
   type AuthedRequest,
 } from "../auth";
+import {
+  validateBody,
+  createSaleSchema,
+  createProductionOrderSchema,
+  createPurchaseOrderSchema,
+  createLossSchema,
+  createCashTransactionSchema,
+} from "../validators/schemas";
 
 export const operationsRouter = Router();
 
@@ -112,6 +120,7 @@ operationsRouter.get(
 operationsRouter.post(
   "/sales",
   requireRole("caissier"),
+  validateBody(createSaleSchema),
   async (req: AuthedRequest, res) => {
     const s = req.body as {
       id?: string;
@@ -230,6 +239,7 @@ operationsRouter.get("/production-orders/:id", async (req, res) => {
 operationsRouter.post(
   "/production-orders",
   requireRole("boulanger"),
+  validateBody(createProductionOrderSchema),
   async (req: AuthedRequest, res) => {
     const o = req.body as {
       id?: string;
@@ -365,6 +375,7 @@ operationsRouter.get("/purchase-orders/:id", async (req, res) => {
 operationsRouter.post(
   "/purchase-orders",
   requireRole("magasinier"),
+  validateBody(createPurchaseOrderSchema),
   async (req: AuthedRequest, res) => {
     const po = req.body as {
       id?: string;
@@ -455,6 +466,7 @@ operationsRouter.get("/losses", async (_req, res) => {
 operationsRouter.post(
   "/losses",
   requireOrganization,
+  validateBody(createLossSchema),
   async (req: AuthedRequest, res) => {
     const l = req.body as {
       id?: string;
@@ -557,15 +569,19 @@ operationsRouter.get("/cash-transactions", async (_req, res) => {
   );
 });
 
-operationsRouter.post("/cash-transactions", async (req, res) => {
-  const t = req.body as {
-    id?: string;
-    type: string;
-    amount: number;
-    description?: string;
-    recordedBy?: string;
-    storeId?: string;
-  };
+operationsRouter.post(
+  "/cash-transactions",
+  requireRole("caissier"),
+  validateBody(createCashTransactionSchema),
+  async (req: AuthedRequest, res) => {
+    const t = req.body as {
+      id?: string;
+      type: string;
+      amount: number;
+      description?: string;
+      recordedBy?: string;
+      storeId?: string;
+    };
   const row = await queryOne(
     `INSERT INTO cash_transactions (id, type, amount, description, date, recorded_by, store_id)
        VALUES ($1,$2,$3,$4,now(),$5,$6)

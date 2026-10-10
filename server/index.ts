@@ -103,18 +103,39 @@ app.use("/api", (req, res, next) => {
   express.json({ limit: "2mb" })(req, res, next);
 });
 
-// Clients SSE connectés
+// Clients SSE connectés avec heartbeat
 const sseClients = new Set<express.Response>();
+
+// Heartbeat périodique pour maintenir les connexions SSE actives (ping toutes les 25s)
+setInterval(() => {
+  for (const client of sseClients) {
+    try {
+      client.write(": ping\n\n");
+    } catch {
+      sseClients.delete(client);
+    }
+  }
+}, 25000);
 
 // Route SSE pour recevoir les mises à jour en temps réel
 app.get("/api/sse/mobilemoney", (req, res) => {
+  // Limite de connexions par serveur
+  if (sseClients.size > 100) {
+    res.status(503).json({ error: "Trop de connexions temps réel actives." });
+    return;
+  }
+
   // Configurer les headers SSE
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
     Connection: "keep-alive",
     "Access-Control-Allow-Origin": config.corsOrigin,
+    "X-Accel-Buffering": "no",
   });
+
+  // Message initial de confirmation
+  res.write(`data: ${JSON.stringify({ type: "CONNECTED", timestamp: Date.now() })}\n\n`);
 
   // Ajouter le client à la liste
   sseClients.add(res);
@@ -124,6 +145,14 @@ app.get("/api/sse/mobilemoney", (req, res) => {
     sseClients.delete(res);
   });
 });
+
+/** Comparaison de chaînes à temps constant et protégée contre les longueurs inégales */
+function safeTimingSafeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
 
 /** Vérifie la signature du webhook selon les spécifications de chaque opérateur */
 function verifyWebhookSignature(
@@ -139,26 +168,17 @@ function verifyWebhookSignature(
       case "WAVE": {
         const waveHmac = crypto.createHmac("sha256", secret);
         const waveSignature = waveHmac.update(payload).digest("hex");
-        return crypto.timingSafeEqual(
-          Buffer.from(waveSignature),
-          Buffer.from(signatureHeader),
-        );
+        return safeTimingSafeEqual(waveSignature, signatureHeader);
       }
       case "ORANGE_MONEY": {
         const orangeHmac = crypto.createHmac("sha256", secret);
         const orangeSignature = orangeHmac.update(payload).digest("hex");
-        return crypto.timingSafeEqual(
-          Buffer.from(orangeSignature),
-          Buffer.from(signatureHeader),
-        );
+        return safeTimingSafeEqual(orangeSignature, signatureHeader);
       }
       case "MTN_MOMO": {
         const mtnHmac = crypto.createHmac("sha512", secret);
         const mtnSignature = mtnHmac.update(payload).digest("base64");
-        return crypto.timingSafeEqual(
-          Buffer.from(mtnSignature),
-          Buffer.from(signatureHeader),
-        );
+        return safeTimingSafeEqual(mtnSignature, signatureHeader);
       }
       default:
         return false;

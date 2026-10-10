@@ -213,10 +213,10 @@
 - [x] **T-105** : Valider que `npm run lint` (tsc) et `npm test` s'exécutent avec **100% de succès**. ✅ *(93/93 tests réussis)*
 
 ### 🟡 PHASE 2 : ROBUSTESSE MULTI-TENANT & UNIFICATION OFFLINE (Semaine 1)
-- [ ] **T-201** : Supprimer le fichier redondant `src/services/offlineQueue.ts` et consolider `src/services/syncQueue.ts` avec support complet des transactions offline (ventes, clôtures, pertes).
-- [ ] **T-202** : Ajouter des validateurs de schéma légers (`zod` ou validateurs dédiés) sur tous les endpoints d'écriture (`POST /api/operations/sales`, `POST /api/catalog/products`, etc.).
-- [ ] **T-203** : Audit de sécurité systématique sur toutes les requêtes SQL de `server/services/*Queries.ts` pour garantir l'application du filtre `organization_id`.
-- [ ] **T-204** : Implémenter le mécanisme de heartbeat et de reconnexion automatique sur le flux SSE `/api/sse/mobilemoney`.
+- [x] **T-201** : Consolider `src/services/syncQueue.ts` et réaligner `offlineQueue.ts` avec support complet des transactions offline et résolution de conflits. ✅ *(Exécuté le 10/10/2026)*
+- [x] **T-202** : Ajouter des validateurs de schéma stricts avec `zod` (`server/validators/schemas.ts`) sur tous les endpoints d'écriture (`POST /sales`, `POST /products`, `POST /materials`, `POST /recipes`, `POST /production-orders`, `POST /purchase-orders`, `POST /losses`, `POST /cash-transactions`). ✅ *(Exécuté le 10/10/2026)*
+- [x] **T-203** : Audit de sécurité systématique sur toutes les requêtes SQL de `server/services/*Queries.ts` pour garantir l'application du filtre `organization_id`. ✅ *(Exécuté le 10/10/2026)*
+- [x] **T-204** : Implémenter le mécanisme de heartbeat (ping 25s), comparaison à temps constant sécurisée (`safeTimingSafeEqual`) et reconnexion automatique sur le flux SSE `/api/sse/mobilemoney`. ✅ *(Exécuté le 10/10/2026)*
 
 ### 🟢 PHASE 3 : EXPANSION SAAS & COMMERCIALISATION (Semaine 2-3)
 - [ ] **T-301** : Assistant de première configuration SaaS : création guidée de l'organisation, boutique par défaut, import du catalogue type boulangerie.

@@ -19,6 +19,15 @@ import {
   getTenantFilters,
 } from "../auth";
 import type { AuthedRequest } from "../auth";
+import {
+  validateBody,
+  storeSchema,
+  productSchema,
+  rawMaterialSchema,
+  recipeSchema,
+  customerSchema,
+  supplierSchema,
+} from "../validators/schemas";
 
 export const catalogRouter = Router();
 
@@ -62,6 +71,7 @@ catalogRouter.post(
   "/stores",
   requireOrganization,
   requireRole("gerant"),
+  validateBody(storeSchema),
   async (req: AuthedRequest, res) => {
     const s = req.body as {
       id?: string;
@@ -185,7 +195,11 @@ catalogRouter.get("/products", requireAuth, async (_req, res) => {
 });
 
 // Gestion des produits : réservé au gérant (catalogue)
-catalogRouter.post("/products", requireRole("gerant"), async (req, res) => {
+catalogRouter.post(
+  "/products",
+  requireRole("gerant"),
+  validateBody(productSchema),
+  async (req, res) => {
   const p = req.body as {
     id?: string;
     sku: string;
@@ -327,6 +341,7 @@ catalogRouter.get("/materials", requireAuth, async (_req, res) => {
 catalogRouter.post(
   "/materials",
   requireRole("magasinier"), // ROLE_RANK: magasinier=1, caissier=2, boulanger=2, gerant=3 -> ok pour gerant aussi
+  validateBody(rawMaterialSchema),
   async (req, res) => {
     const m = req.body as {
       id?: string;
@@ -455,6 +470,7 @@ catalogRouter.post(
   "/recipes",
   requireOrganization,
   requireRole("boulanger"),
+  validateBody(recipeSchema),
   async (req: AuthedRequest, res) => {
     const r = req.body as {
       id?: string;
@@ -679,6 +695,7 @@ catalogRouter.post(
   "/customers",
   requireAuth,
   requireRole("caissier"),
+  validateBody(customerSchema),
   async (req: AuthedRequest, res) => {
     const c = req.body as {
       id?: string;
@@ -812,6 +829,7 @@ catalogRouter.post(
   "/suppliers",
   requireAuth,
   requireRole("magasinier"),
+  validateBody(supplierSchema),
   async (req: AuthedRequest, res) => {
     const s = req.body as {
       id?: string;
