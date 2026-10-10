@@ -147,18 +147,96 @@ reportsRouter.get(
   },
 );
 
+import {
+  generateSalesJournal,
+  generatePurchasesJournal,
+  formatJournalToCsv,
+} from "../services/accountingService";
+
 // ------------------------------------------------------------------
-// Ventes historiques (pour les graphiques)
+// Exports Comptables OHADA (SYSCOHADA révisé)
 // ------------------------------------------------------------------
 
-reportsRouter.get("/sales/history", async (req: AuthedRequest, res) => {
-  const storeId = storeOf(req);
-  const { data: sales } = await getSalesForStore(storeId, 1, 200);
-  // Agrégation mensuelle simplifiée pour le graphique, à défaut
-  const monthly = sales.reduce<Record<string, number>>((acc, s) => {
-    const month = new Date(s.date).toISOString().slice(0, 7);
-    acc[month] = (acc[month] ?? 0) + s.total;
-    return acc;
-  }, {});
-  res.json({ data: monthly, sales });
-});
+reportsRouter.get(
+  "/reports/accounting/sales-journal",
+  requireOrganization,
+  async (req: AuthedRequest, res) => {
+    try {
+      const organizationId = req.user?.organizationId;
+      if (!organizationId) {
+        res.status(403).json({ error: "Utilisateur non associé à une organisation" });
+        return;
+      }
+
+      const { startDate, endDate, format } = req.query as {
+        startDate?: string;
+        endDate?: string;
+        format?: string;
+      };
+
+      const entries = await generateSalesJournal({
+        organizationId,
+        storeId: req.user?.storeId || undefined,
+        startDate,
+        endDate,
+      });
+
+      if (format === "csv") {
+        const csv = formatJournalToCsv(entries);
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename="journal-ventes-ohada-${new Date().toISOString().slice(0, 10)}.csv"`,
+        );
+        res.send(csv);
+        return;
+      }
+
+      res.json({ success: true, count: entries.length, data: entries });
+    } catch (e) {
+      res.status(500).json({ error: (e as Error).message });
+    }
+  },
+);
+
+reportsRouter.get(
+  "/reports/accounting/purchases-journal",
+  requireOrganization,
+  async (req: AuthedRequest, res) => {
+    try {
+      const organizationId = req.user?.organizationId;
+      if (!organizationId) {
+        res.status(403).json({ error: "Utilisateur non associé à une organisation" });
+        return;
+      }
+
+      const { startDate, endDate, format } = req.query as {
+        startDate?: string;
+        endDate?: string;
+        format?: string;
+      };
+
+      const entries = await generatePurchasesJournal({
+        organizationId,
+        storeId: req.user?.storeId || undefined,
+        startDate,
+        endDate,
+      });
+
+      if (format === "csv") {
+        const csv = formatJournalToCsv(entries);
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename="journal-achats-ohada-${new Date().toISOString().slice(0, 10)}.csv"`,
+        );
+        res.send(csv);
+        return;
+      }
+
+      res.json({ success: true, count: entries.length, data: entries });
+    } catch (e) {
+      res.status(500).json({ error: (e as Error).message });
+    }
+  },
+);

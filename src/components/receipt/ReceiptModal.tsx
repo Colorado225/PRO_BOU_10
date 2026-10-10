@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Sale } from '../../types/bakery';
 import { useBakery } from '../../context/BakeryContext';
-import { Printer, X, Check, Bluetooth, Wheat } from 'lucide-react';
+import { Printer, X, Check, Bluetooth, Wheat, FileText } from 'lucide-react';
 import { generateReceipt, printToBluetoothPrinter } from '../../services/escposPrinter';
+import { B2BInvoiceModal } from './B2BInvoiceModal';
 
 interface ReceiptModalProps {
   sale: Sale;
@@ -10,9 +11,11 @@ interface ReceiptModalProps {
 }
 
 export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => {
-  const { formatMoney, stores, company } = useBakery();
+  const { formatMoney, stores, company, customers } = useBakery();
   const [isPrinting, setIsPrinting] = useState<boolean>(false);
+  const [showB2BInvoice, setShowB2BInvoice] = useState<boolean>(false);
   const currentStore = stores.find((s) => s.id === sale.storeId) || stores[0];
+  const customer = customers.find((c) => c.id === sale.customerId);
 
   const handleBrowserPrint = () => {
     window.print();
@@ -208,30 +211,47 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ sale, onClose }) => 
         </div>
 
         {/* Modal Actions */}
-        <div className="p-4 bg-stone-900 border-t border-stone-800 flex gap-3">
-          <button
-            onClick={handleBrowserPrint}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-stone-700 hover:bg-stone-600 text-stone-100 font-bold text-xs shadow-md transition-colors"
-          >
-            <Printer className="w-4 h-4" />
-            <span>Navigateur</span>
-          </button>
-          <button
-            onClick={handleThermalPrint}
-            disabled={isPrinting}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:bg-amber-500/50 text-stone-950 font-bold text-xs shadow-md transition-colors"
-          >
-            <Bluetooth className={`w-4 h-4 ${isPrinting ? 'animate-pulse' : ''}`} />
-            <span>{isPrinting ? 'Impression...' : 'Thermal BT'}</span>
-          </button>
+        <div className="p-4 bg-stone-900 border-t border-stone-800 flex flex-col gap-2">
+          <div className="flex gap-2">
+            <button
+              onClick={handleBrowserPrint}
+              className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-stone-700 hover:bg-stone-600 text-stone-100 font-bold text-xs shadow-md transition-colors"
+            >
+              <Printer className="w-4 h-4" />
+              <span>Ticket Impr.</span>
+            </button>
+            <button
+              onClick={handleThermalPrint}
+              disabled={isPrinting}
+              className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:bg-amber-500/50 text-stone-950 font-bold text-xs shadow-md transition-colors"
+            >
+              <Bluetooth className={`w-4 h-4 ${isPrinting ? 'animate-pulse' : ''}`} />
+              <span>{isPrinting ? 'Impression...' : 'Thermal BT'}</span>
+            </button>
+            <button
+              onClick={() => setShowB2BInvoice(true)}
+              className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md transition-colors"
+            >
+              <FileText className="w-4 h-4" />
+              <span>Facture A4</span>
+            </button>
+          </div>
           <button
             onClick={onClose}
-            className="py-2.5 px-4 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-semibold text-xs border border-stone-700 transition-colors"
+            className="w-full py-2 px-4 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 font-semibold text-xs border border-stone-700 transition-colors"
           >
             Fermer
           </button>
         </div>
       </div>
+
+      {showB2BInvoice && (
+        <B2BInvoiceModal
+          sale={sale}
+          customer={customer}
+          onClose={() => setShowB2BInvoice(false)}
+        />
+      )}
     </div>
   );
 };

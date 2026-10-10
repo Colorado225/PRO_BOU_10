@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useBakery } from '../../context/BakeryContext';
-import { Customer } from '../../types/bakery';
+import { Customer, Sale } from '../../types/bakery';
 import {
   Users,
   Plus,
@@ -14,16 +14,19 @@ import {
   CheckCircle,
   AlertCircle,
   X,
+  FileText,
 } from 'lucide-react';
+import { B2BInvoiceModal } from '../receipt/B2BInvoiceModal';
 
 export const CustomersView: React.FC = () => {
-  const { customers, formatMoney, addCustomer, updateCustomer, payCustomerCredit } = useBakery();
+  const { customers, sales, formatMoney, addCustomer, updateCustomer, payCustomerCredit } = useBakery();
 
   const [search, setSearch] = useState<string>('');
   const [filterType, setFilterType] = useState<string>('all');
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [payingCustomer, setPayingCustomer] = useState<Customer | null>(null);
   const [payAmount, setPayAmount] = useState<number>(10000);
+  const [selectedInvoiceSale, setSelectedInvoiceSale] = useState<{ sale: Sale; customer: Customer } | null>(null);
 
   // New Customer form
   const [name, setName] = useState<string>('');
@@ -196,19 +199,60 @@ export const CustomersView: React.FC = () => {
                 </div>
               </div>
 
-              {/* Action Button */}
-              {isB2B && cust.creditBalance > 0 && (
-                <button
-                  onClick={() => {
-                    setPayingCustomer(cust);
-                    setPayAmount(cust.creditBalance);
-                  }}
-                  className="w-full py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-stone-950 font-bold text-xs uppercase flex items-center justify-center gap-1.5 shadow-md transition-colors"
-                >
-                  <DollarSign className="w-4 h-4" />
-                  <span>Encaisser Règlement ({formatMoney(cust.creditBalance)})</span>
-                </button>
-              )}
+              {/* Action Buttons */}
+              <div className="space-y-2 pt-2">
+                {isB2B && (
+                  <button
+                    onClick={() => {
+                      const custSale = sales.find((s) => s.customerId === cust.id || s.customerName === cust.name);
+                      if (custSale) {
+                        setSelectedInvoiceSale({ sale: custSale, customer: cust });
+                      } else {
+                        // Génère une vente proforma simulée si aucune vente existante
+                        const proformaSale: Sale = {
+                          id: `proforma-${cust.id}-${Date.now()}`,
+                          receiptNumber: `FAC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+                          date: new Date().toISOString(),
+                          items: [
+                            { productId: 'p1', name: 'Baguette Tradition Artisanale', unitPrice: 300, quantity: 100, total: 30000 },
+                            { productId: 'p2', name: 'Croissant Pur Beurre', unitPrice: 500, quantity: 50, total: 25000 },
+                          ],
+                          subtotal: 55000,
+                          discountAmount: 0,
+                          vatAmount: 4500,
+                          total: 55000,
+                          paymentMethod: 'credit_b2b',
+                          amountPaid: 0,
+                          changeReturned: 0,
+                          customerId: cust.id,
+                          customerName: cust.name,
+                          cashierName: 'Direction Commerciale',
+                          storeId: 'store-1',
+                          status: 'en_attente',
+                        };
+                        setSelectedInvoiceSale({ sale: proformaSale, customer: cust });
+                      }
+                    }}
+                    className="w-full py-1.5 rounded-xl bg-stone-800 hover:bg-stone-750 text-stone-300 font-bold text-[11px] flex items-center justify-center gap-1.5 border border-stone-700 transition-colors"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Facture Proforma / B2B</span>
+                  </button>
+                )}
+
+                {isB2B && cust.creditBalance > 0 && (
+                  <button
+                    onClick={() => {
+                      setPayingCustomer(cust);
+                      setPayAmount(cust.creditBalance);
+                    }}
+                    className="w-full py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-stone-950 font-bold text-xs uppercase flex items-center justify-center gap-1.5 shadow-md transition-colors"
+                  >
+                    <DollarSign className="w-4 h-4" />
+                    <span>Encaisser Règlement ({formatMoney(cust.creditBalance)})</span>
+                  </button>
+                )}
+              </div>
             </div>
           );
         })}
@@ -365,6 +409,15 @@ export const CustomersView: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {/* MODAL: B2B INVOICE */}
+      {selectedInvoiceSale && (
+        <B2BInvoiceModal
+          sale={selectedInvoiceSale.sale}
+          customer={selectedInvoiceSale.customer}
+          onClose={() => setSelectedInvoiceSale(null)}
+        />
       )}
     </div>
   );

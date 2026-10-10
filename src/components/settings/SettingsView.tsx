@@ -11,7 +11,11 @@ import {
   CheckCircle,
   Wheat,
   Coins,
+  FileSpreadsheet,
+  Sparkles,
+  Calendar,
 } from 'lucide-react';
+import { api } from '../../services/api';
 
 export const SettingsView: React.FC = () => {
   const {
@@ -25,17 +29,24 @@ export const SettingsView: React.FC = () => {
     resetToDemoData,
     exportBackupJson,
     importBackupJson,
+    setNotification,
   } = useBakery();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Champs édités localement puis enregistrés via updateCompany,
-  // afin que le RCCM et les paramètres fiscaux alimentent réellement
-  // les tickets et exports (au lieu d'états locaux non persistés).
+  // Champs édités localement puis enregistrés via updateCompany
   const [establishmentName, setEstablishmentName] = useState<string>(company.establishmentName);
   const [legalId, setLegalId] = useState<string>(company.rccm);
   const [taxpayerAccount, setTaxpayerAccount] = useState<string>(company.taxpayerAccount);
   const [defaultVatRate, setDefaultVatRate] = useState<number>(company.defaultVatRate);
+
+  // Dates pour exports comptables
+  const [startDate, setStartDate] = useState<string>(
+    new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10),
+  );
+  const [endDate, setEndDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [isBootstrapping, setIsBootstrapping] = useState<boolean>(false);
 
   const handleSaveCompany = () => {
     updateCompany({
@@ -45,6 +56,52 @@ export const SettingsView: React.FC = () => {
       defaultVatRate,
       currency,
     });
+  };
+
+  const handleExportSalesOhada = async () => {
+    setIsExporting(true);
+    try {
+      const url = `/api/reports/accounting/sales-journal?format=csv&startDate=${startDate}&endDate=${endDate}`;
+      window.open(url, '_blank');
+      setNotification('Journal des ventes OHADA téléchargé avec succès');
+    } catch (e) {
+      console.error('Erreur export ventes OHADA:', e);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportPurchasesOhada = async () => {
+    setIsExporting(true);
+    try {
+      const url = `/api/reports/accounting/purchases-journal?format=csv&startDate=${startDate}&endDate=${endDate}`;
+      window.open(url, '_blank');
+      setNotification('Journal des achats OHADA téléchargé avec succès');
+    } catch (e) {
+      console.error('Erreur export achats OHADA:', e);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleBootstrapOrganization = async () => {
+    if (!confirm('Voulez-vous initialiser le catalogue type de boulangerie (matières premières, produits et fiches recettes DGI) ?')) {
+      return;
+    }
+
+    setIsBootstrapping(true);
+    try {
+      await api.post('/api/onboarding/bootstrap', {
+        establishmentName: company.establishmentName || 'Boulangerie Artisanale',
+      });
+      setNotification('Pack de démarrage initialisé avec succès !');
+      setTimeout(() => window.location.reload(), 1500);
+    } catch (e) {
+      console.error('Erreur bootstrap:', e);
+      setNotification('Échec de l’initialisation du catalogue');
+    } finally {
+      setIsBootstrapping(false);
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -276,6 +333,82 @@ export const SettingsView: React.FC = () => {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* OHADA Accounting Exports */}
+        <div className="bg-stone-900 border border-stone-800 rounded-3xl p-6 space-y-4">
+          <div className="flex items-center gap-2 border-b border-stone-800 pb-3">
+            <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
+            <h3 className="font-extrabold text-sm text-stone-100">Exports Comptables OHADA (SYSCOHADA)</h3>
+          </div>
+
+          <p className="text-xs text-stone-400 leading-relaxed">
+            Générez les journaux normalisés pour votre expert-comptable ou logiciel de comptabilité (Sage 100, Saari, Odoo, Excel).
+          </p>
+
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div>
+              <label className="text-[11px] font-semibold text-stone-400">Date Début :</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full mt-1 bg-stone-950 border border-stone-700 rounded-xl px-3 py-2 text-stone-200"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold text-stone-400">Date Fin :</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full mt-1 bg-stone-950 border border-stone-700 rounded-xl px-3 py-2 text-stone-200"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2">
+            <button
+              onClick={handleExportSalesOhada}
+              disabled={isExporting}
+              className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-colors"
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              <span>Exporter Journal des Ventes (Comptes 701, 4431, 531)</span>
+            </button>
+
+            <button
+              onClick={handleExportPurchasesOhada}
+              disabled={isExporting}
+              className="w-full py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 disabled:opacity-50 text-stone-200 font-bold text-xs flex items-center justify-center gap-2 border border-stone-700 transition-colors"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+              <span>Exporter Journal des Achats (Comptes 601, 401)</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Onboarding & Starter Pack */}
+        <div className="bg-stone-900 border border-stone-800 rounded-3xl p-6 space-y-4 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2 border-b border-stone-800 pb-3">
+              <Sparkles className="w-5 h-5 text-amber-400" />
+              <h3 className="font-extrabold text-sm text-stone-100">Pack de Démarrage & Initialisation</h3>
+            </div>
+
+            <p className="text-xs text-stone-400 mt-3 leading-relaxed">
+              Initialisez automatiquement le catalogue de démarrage avec les fiches recettes artisanales (baguettes, croissants, pains au chocolat), les seuils d'alertes de matières premières et les taux de TVA DGI.
+            </p>
+          </div>
+
+          <button
+            onClick={handleBootstrapOrganization}
+            disabled={isBootstrapping}
+            className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-colors mt-4"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>{isBootstrapping ? 'Initialisation en cours...' : 'Initialiser le Catalogue & Recettes Types'}</span>
+          </button>
         </div>
 
         {/* Backup & System Operations */}

@@ -14,12 +14,52 @@ import {
   type AuthedRequest,
   type Role,
 } from "../auth";
+import { bootstrapOrganization } from "../services/onboardingService";
 
 export const adminRouter = Router();
 
 // L'authentification est maintenant gérée par le middleware global dans server/index.ts
 
-/* ----------------------------- COMPANY SETTINGS ---------------------------- */
+/* ----------------------------- ONBOARDING & BOOTSTRAP ---------------------- */
+
+/**
+ * Initialise l'organisation avec son pack de démarrage complet
+ * (Boutique principale, paramètres légaux, catalogue et recettes types).
+ */
+adminRouter.post(
+  "/onboarding/bootstrap",
+  requireOrganization,
+  requireRole("gerant"),
+  async (req: AuthedRequest, res) => {
+    try {
+      const orgId = req.user?.organizationId;
+      if (!orgId) {
+        res.status(403).json({ error: "Utilisateur sans organisation." });
+        return;
+      }
+
+      const { establishmentName, storeName, phone, city } = req.body as {
+        establishmentName?: string;
+        storeName?: string;
+        phone?: string;
+        city?: string;
+      };
+
+      const result = await bootstrapOrganization({
+        organizationId: orgId,
+        establishmentName: establishmentName || req.user?.name || "Boulangerie Artisanale",
+        storeName,
+        phone,
+        city,
+      });
+
+      res.status(200).json({ success: true, data: result });
+    } catch (e) {
+      console.error("[onboarding] Erreur lors du bootstrap de l'organisation:", e);
+      res.status(500).json({ error: (e as Error).message });
+    }
+  },
+);
 
 adminRouter.get(
   "/company",

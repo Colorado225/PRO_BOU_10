@@ -168,6 +168,7 @@ export interface Customer {
   email?: string;
   type: "particulier" | "b2b_hotel" | "b2b_restaurant" | "b2b_revendeur";
   address?: string;
+  taxNumber?: string;
   loyaltyPoints: number;
   creditBalance: number; // outstanding debt to the bakery
   creditLimit: number;

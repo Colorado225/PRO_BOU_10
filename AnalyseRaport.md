@@ -219,10 +219,10 @@
 - [x] **T-204** : Implémenter le mécanisme de heartbeat (ping 25s), comparaison à temps constant sécurisée (`safeTimingSafeEqual`) et reconnexion automatique sur le flux SSE `/api/sse/mobilemoney`. ✅ *(Exécuté le 10/10/2026)*
 
 ### 🟢 PHASE 3 : EXPANSION SAAS & COMMERCIALISATION (Semaine 2-3)
-- [ ] **T-301** : Assistant de première configuration SaaS : création guidée de l'organisation, boutique par défaut, import du catalogue type boulangerie.
+- [x] **T-301** : Initialisation automatique SaaS & bootstrap d'organisation (`server/services/onboardingService.ts` et route `/api/onboarding/bootstrap` pour initialiser boutique principale, matières premières, produits finis et recettes types DGI). ✅ *(Exécuté le 10/10/2026)*
 - [ ] **T-302** : Intégration de la passerelle de paiement d'abonnements SaaS (CinetPay / Wave Business).
-- [ ] **T-303** : Module de génération de factures B2B au format PDF normé (mentions légales DGI, QR Code fiscal).
-- [ ] **T-304** : Export du journal des ventes et des achats compatible avec les logiciels comptables OHADA (Sage, Saari, Excel).
+- [x] **T-303** : Module de génération de factures B2B au format PDF certifié A4 (`src/components/receipt/B2BInvoiceModal.tsx` et `src/services/invoiceService.ts` avec montants en lettres, mentions DGI, ventilation HT/TVA/TTC et coordonnées client). ✅ *(Exécuté le 10/10/2026)*
+- [x] **T-304** : Export normalisé des journaux comptables OHADA (Journal des Ventes Comptes 701/4431/531 et Journal des Achats Comptes 601/401 au format CSV universel via `server/services/accountingService.ts`). ✅ *(Exécuté le 10/10/2026)*
 
 ---
 

@@ -11,10 +11,10 @@
 
 | Statut       | Nombre de tâches |
 | ------------ | ---------------- |
-| ✅ Terminées | 9                |
+| ✅ Terminées | 21               |
 | ⏳ En cours  | 0                |
-| ❌ À faire   | 21               |
-| **Total**    | **30**           |
+| ❌ À faire   | 11               |
+| **Total**    | **32**           |
 
 ---
 
@@ -83,13 +83,19 @@
 
 ### Fonctionnalités avancées
 
-- [ ] **PWA-001** - Activer fonctionnalités Progressive Web App  
-       _Frontend : configuration Vite PWA_
-- [ ] **SYNC-001** - Mettre en place synchronisation hors ligne  
-       _Fichiers concernés : server/sync/_, frontend/src/hooks/useOffline.ts\*
+- [x] **PWA-001** - Activer fonctionnalités Progressive Web App ✅  
+       _Frontend : configuration Vite PWA, manifest, offline caching_
+- [x] **SYNC-001** - Mettre en place synchronisation hors ligne et réconciliation ✅  
+       _Fichiers : src/services/syncQueue.ts, src/services/offlineQueue.ts_
+- [x] **OHADA-001** - Exports comptables normalisés OHADA (ventes, achats) ✅  
+       _Fichiers : server/services/accountingService.ts, server/routes/reports.routes.ts_
+- [x] **FACT-001** - Factures commerciales B2B au format PDF A4 certifié DGI ✅  
+       _Fichiers : src/components/receipt/B2BInvoiceModal.tsx, src/services/invoiceService.ts_
+- [x] **ONBOARD-001** - Initialisation automatique & pack de démarrage organisation ✅  
+       _Fichiers : server/services/onboardingService.ts, server/routes/admin.routes.ts_
 - [ ] **AUDIT-001** - Journalisation complète des modifications des données  
        _Trigger SQL à créer sur toutes les tables_
-- [ ] **DASH-001** - Finaliser tableaux de bord et statistiques  
+- [x] **DASH-001** - Finaliser tableaux de bord et statistiques ✅  
        _Frontend : src/components/dashboard/_
 
 ---
