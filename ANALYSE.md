@@ -213,10 +213,10 @@ et coche les critères d'acceptation correspondants dans ce fichier (ajouter la 
 | Item | Statut | Date | Commit/PR | Notes |
 |---|---|---|---|---|
 | P0-1 Cookies httpOnly | ⬜ À faire | | | |
-| P0-2 Fallbacks démo | ✅ Fait | 2026-10-10 | (ce commit) | `AuthContext.tsx` : mode démo derrière `import.meta.env.DEV && VITE_DEMO_MODE==='true'`, plus d'auto-login `gerant` ; `server/db.ts` + `index.ts` : aucun fallback mock en production, fail-fast explicite. Reproduction validée : boot prod sans DB → exit 1 avec message `[db] ❌ Neon non accessible en PRODUCTION`. |
+| P0-2 Fallbacks démo | ✅ Fait | 2026-10-10 | c2bb735 | `AuthContext.tsx` : mode démo derrière `import.meta.env.DEV && VITE_DEMO_MODE==='true'`, plus d'auto-login `gerant` ; `server/db.ts` + `index.ts` : aucun fallback mock en production, fail-fast explicite. Reproduction validée : boot prod sans DB → exit 1 avec message `[db] ❌ Neon non accessible en PRODUCTION`. |
 | P0-3 Isolation multi-tenant | ⬜ À faire | | | |
 | P0-4 Unifier JWT (jose) | ✅ Fait | 2026-10-10 | 6436e25 | `server/auth.ts` + `auth.routes.ts` migrés vers `jose` ; `jsonwebtoken`/`jwks-rsa`/`@types/jsonwebtoken` supprimés ; 22 tests auth OK ; cookies centralisés via `cookieSecurity`/`setAccessCookie`/`setSessionCookies` |
-| P0-5 Fail-fast DB | ⬜ À faire | | | |
+| P0-5 Fail-fast DB | ✅ Fait | 2026-10-10 | c2bb735 | `server/config.ts` : `DATABASE_URL` obligatoire en production (throw au chargement), fallback localhost toléré uniquement en dev. `server/index.ts` : `/api/health` teste réellement la DB (`SELECT 1`) → 200 `{db:'up'}` ou 503 `{status:'down',db:'unreachable'}`. Validé empiriquement : boot prod sans DATABASE_URL → exit 1 ; boot prod avec DB invalide → exit 1 (`[db] ❌ Neon non accessible en PRODUCTION`). |
 | P0-6 Assainir Git | ✅ Fait | 2026-10-10 | f797e78 | .gitignore étendu, dist/ et .env sortis du versionnement, .env.example créé. ⚠️ Secret Neon à révoquer (présent dans l'historique). |
 | P1-7 ESLint/Prettier | ⬜ À faire | | | |
 | P1-8 CI GitHub Actions | ⬜ À faire | | | |
