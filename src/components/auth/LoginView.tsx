@@ -142,20 +142,24 @@ export const LoginView: React.FC<LoginViewProps> = ({ onNavigateToSignUp, onNavi
             </div>
           )}
 
-          {/* ═══ BOUTON DÉMO — ACCÈS DIRECT ═══ */}
-          <button
-            type="button"
-            onClick={demoLogin}
-            className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold text-sm tracking-wide flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all active:scale-[0.98] mb-5"
-          >
-            🚀 Accéder au dashboard (démo)
-          </button>
+          {/* ═══ BOUTON DÉMO — ACCÈS DIRECT (dev + VITE_DEMO_MODE=true uniquement) ═══ */}
+          {import.meta.env.DEV && import.meta.env.VITE_DEMO_MODE === 'true' && (
+            <button
+              type="button"
+              onClick={demoLogin}
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold text-sm tracking-wide flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all active:scale-[0.98] mb-5"
+            >
+              🚀 Accéder au dashboard (démo)
+            </button>
+          )}
 
-          <div className="flex items-center gap-4 mb-5">
-            <div className="flex-1 h-px bg-stone-200" />
-            <span className="text-xs text-stone-400 font-medium">ou connectez-vous</span>
-            <div className="flex-1 h-px bg-stone-200" />
-          </div>
+          {import.meta.env.DEV && import.meta.env.VITE_DEMO_MODE === 'true' && (
+            <div className="flex items-center gap-4 mb-5">
+              <div className="flex-1 h-px bg-stone-200" />
+              <span className="text-xs text-stone-400 font-medium">ou connectez-vous</span>
+              <div className="flex-1 h-px bg-stone-200" />
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>

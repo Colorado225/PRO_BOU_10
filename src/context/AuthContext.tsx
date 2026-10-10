@@ -21,6 +21,14 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+/**
+ * Mode démo — DÉSACTIVÉ PAR DÉFAUT.
+ * Activer explicitement via VITE_DEMO_MODE=true dans .env.local en développement.
+ * En production, tout fallback démo est neutralisé : échec d'auth = déconnexion stricte.
+ */
+const DEMO_MODE_ENABLED =
+  import.meta.env.DEV && import.meta.env.VITE_DEMO_MODE === 'true';
+
 /** Utilisateur démo par défaut */
 const DEMO_USER: User = {
   id: 'demo-gerant',
@@ -43,8 +51,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     restoredRef.current = true;
 
     const mode = localStorage.getItem('auth_mode');
-    
+
     if (mode === 'demo') {
+      // En dehors du mode démo autorisé, une session démo persistée est purgée :
+      // aucun auto-login hors mode démo explicite.
+      if (!DEMO_MODE_ENABLED) {
+        localStorage.removeItem('auth_mode');
+        setIsRestoring(false);
+        return;
+      }
       setUser(DEMO_USER);
       setIsRestoring(false);
       return;
@@ -103,8 +118,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(userData);
   }, []);
 
-  /** Connexion démo instantanée — pas d'appel API */
+  /** Connexion démo instantanée — pas d'appel API. No-op si le mode démo est désactivé. */
   const demoLogin = useCallback(() => {
+    if (!DEMO_MODE_ENABLED) {
+      console.warn('[Auth] Mode démo désactivé (VITE_DEMO_MODE!=true ou build de production).');
+      return;
+    }
     localStorage.setItem('auth_mode', 'demo');
     localStorage.removeItem('auth_token');
     setUser(DEMO_USER);

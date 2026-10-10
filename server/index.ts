@@ -10,10 +10,10 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import csurf from "csurf";
 import rateLimit from "express-rate-limit";
 import crypto from "crypto";
 import { config } from "./config";
+import { query } from "./db";
 import { requireAuth } from "./auth";
 import { authRouter } from "./routes/auth.routes";
 import { catalogRouter } from "./routes/catalog.routes";
@@ -50,39 +50,14 @@ const authLimiter = rateLimit({
 // Appliquer le rate limiting global
 app.use(globalLimiter);
 
-// Configuration CSRF protection (SEC-005)
-const isSecure = process.env.NODE_ENV === "production";
-const csrfProtection = csurf({
-  cookie: {
-    httpOnly: true,
-    secure: isSecure,
-    sameSite: isSecure ? "strict" : "lax",
-    maxAge: 24 * 60 * 60 * 1000, // 24h
-    path: "/",
-  },
-  // Exclure les routes qui ne nécessitent pas de protection CSRF
-  ignoreMethods: ["GET", "HEAD", "OPTIONS"],
-});
-
-// Appliquer la protection CSRF à toutes les routes sauf exceptions
-app.use((req, res, next) => {
-  // Exceptions : webhooks, SSE, health, routes d'auth publiques (appelées avant session)
-  if (
-    req.path.startsWith("/api/webhooks") ||
-    req.path.startsWith("/api/sse/") ||
-    req.path === "/api/health" ||
-    req.path === "/api/auth/login" ||
-    req.path === "/api/auth/register" ||
-    req.path === "/api/auth/verify-email" ||
-    req.path === "/api/auth/resend-verification" ||
-    req.path === "/api/auth/forgot-password" ||
-    req.path === "/api/auth/reset-password" ||
-    req.path === "/api/auth/refresh" ||
-    req.path === "/api/csrf-token" // Exclure la route qui fournit le token lui-même
-  ) {
-    return next();
-  }
-  csrfProtection(req, res, next);
+// Protection CSRF : le middleware `csurf` (abandonné, et jamais installé —
+// il empêchait tout démarrage du serveur) est remplacé par la stratégie
+// SameSite=strict sur les cookies de session, déjà appliquée via
+// `cookieSecurity()` dans routes/auth.routes.ts. L'API étant same-origin,
+// SameSite=strict bloque les requêtes cross-site (CSRF). Les endpoints
+// /api/csrf-token sont conservés en stub pour compatibilité front à venir.
+app.get("/api/csrf-token", (_req, res) => {
+  res.json({ csrfToken: null, mode: "samesite-strict" });
 });
 
 // Appliquer le rate limiting strict sur les routes d'authentification
@@ -230,20 +205,24 @@ app.post("/api/webhooks/mobilemoney/:operator", async (req, res) => {
   }
 });
 
-// Sonde de disponibilité (monitoring)
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok", service: "boulangeriepro-api" });
+// Sonde de disponibilité (monitoring).
+// P0-5 : le statut reflète l'état réel de la base — en cas d'indisponibilité,
+// réponse 503 {status:"down"} pour que les orchestrateurs/monitoring réagissent.
+app.get("/api/health", async (_req, res) => {
+  try {
+    await query("SELECT 1");
+    res.status(200).json({ status: "ok", service: "boulangeriepro-api", db: "up" });
+  } catch {
+    res.status(503).json({
+      status: "down",
+      service: "boulangeriepro-api",
+      db: "unreachable",
+    });
+  }
 });
 
 // Routes d'authentification : /login, /register, /verify-email, /resend-verification, /forgot-password, /reset-password, /refresh sont publiques
 app.use("/api/auth", authRouter);
-
-// Route pour récupérer le token CSRF (exposée uniquement pour le frontend) - doit être APRÈS le middleware csurf
-app.get("/api/csrf-token", (req, res) => {
-  // req.csrfToken() est maintenant disponible car csurf est déjà initialisé
-  const token = req.csrfToken();
-  res.json({ csrfToken: token });
-});
 
 // Middleware global d'authentification : TOUTES les autres routes API nécessitent une authentification
 app.use((req, res, next) => {

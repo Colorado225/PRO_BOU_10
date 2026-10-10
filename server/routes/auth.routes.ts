@@ -14,7 +14,7 @@
  * - POST /api/auth/refresh           — renouvellement de l'access token
  * - GET  /api/auth/users             — liste des utilisateurs (gérant)
  */
-import { Router } from "express";
+import { Router, Response } from "express";
 import bcrypt from "bcryptjs";
 import { query, queryOne } from "../db";
 import {
@@ -24,6 +24,7 @@ import {
   hashPassword,
   PERMISSIONS,
   type AuthedRequest,
+  type AuthPayload,
   type Role,
 } from "../auth";
 import {
@@ -37,9 +38,14 @@ import {
 export const authRouter = Router();
 
 // ═══════════════════════════════════════════════════════════════
-// MODE MOCK — Fallback quand la base de données n'est pas accessible
+// MODE MOCK — Fallback quand la base de données n'est pas accessible.
+// STRICTEMENT RÉSERVÉ AU DÉVELOPPEMENT : en production, une DB
+// inaccessible = erreur 503, jamais de comptes de démo (P0-2).
 // ═══════════════════════════════════════════════════════════════
 let dbAvailable: boolean | null = null;
+
+/** Mode mock autorisé uniquement hors production. */
+const MOCK_MODE_ALLOWED = process.env.NODE_ENV !== "production";
 
 /** Teste la connectivité à la base de données. */
 async function checkDbAvailability(): Promise<boolean> {
@@ -48,12 +54,28 @@ async function checkDbAvailability(): Promise<boolean> {
     await query(`SELECT 1`);
     dbAvailable = true;
   } catch {
-    console.warn(
-      "[auth] ⚠️  Base de données indisponible — activation du mode mock (comptes de démo)",
-    );
-    dbAvailable = false;
+    if (!MOCK_MODE_ALLOWED) {
+      console.error(
+        "[auth] ❌ Base de données indisponible en production — mode mock désactivé.",
+      );
+      dbAvailable = false;
+    } else {
+      console.warn(
+        "[auth] ⚠️  Base de données indisponible — activation du mode mock (comptes de démo, DEV uniquement)",
+      );
+      dbAvailable = false;
+    }
   }
   return dbAvailable;
+}
+
+/** Réponse d'erreur uniforme quand le fallback mock est interdit/indisponible. */
+function mockUnavailable(res: Response) {
+  return res.status(503).json({
+    success: false,
+    error:
+      "Base de données indisponible. Le mode démonstration est réservé au développement.",
+  });
 }
 
 /** Comptes de démonstration en mémoire (utilisés quand la DB est inaccessible). */
@@ -155,27 +177,41 @@ function buildUserResponse(user: {
   };
 }
 
-/** Pose les cookies de session (access + refresh tokens). */
-function setSessionCookies(res: any, accessToken: string, refreshToken: string) {
+/** Calcule les attributs Secure/SameSite selon le contexte (HTTPS, proxy, prod). */
+function cookieSecurity(res: any): { secure: boolean; sameSite: "none" | "lax" } {
   // Détecter HTTPS : header x-forwarded-proto (proxy) ou protocole direct
   // En production et dans les previews (Arena, etc.), on est toujours en HTTPS
   const forwardedProto = res.req?.headers?.["x-forwarded-proto"];
-  const isSecure = forwardedProto === "https" || 
-                   res.req?.protocol === "https" || 
-                   process.env.NODE_ENV === "production" ||
-                   (res.req?.headers?.host && !res.req.headers.host.startsWith("localhost"));
-  
+  const isSecure =
+    forwardedProto === "https" ||
+    res.req?.protocol === "https" ||
+    process.env.NODE_ENV === "production" ||
+    (!!res.req?.headers?.host && !res.req.headers.host.startsWith("localhost"));
+  return { secure: isSecure, sameSite: isSecure ? "none" : "lax" };
+}
+
+/** Pose uniquement le cookie d'accès (mode mock : pas de refresh token en DB). */
+function setAccessCookie(res: any, accessToken: string) {
   res.cookie("access_token", accessToken, {
     httpOnly: true,
-    secure: isSecure,
-    sameSite: isSecure ? "none" : "lax",
+    ...cookieSecurity(res),
+    maxAge: 24 * 60 * 60 * 1000, // 24h
+    path: "/",
+  });
+}
+
+/** Pose les cookies de session (access + refresh tokens). */
+function setSessionCookies(res: any, accessToken: string, refreshToken: string) {
+  const security = cookieSecurity(res);
+  res.cookie("access_token", accessToken, {
+    httpOnly: true,
+    ...security,
     maxAge: 24 * 60 * 60 * 1000, // 24h
     path: "/",
   });
   res.cookie("refresh_token", refreshToken, {
     httpOnly: true,
-    secure: isSecure,
-    sameSite: isSecure ? "none" : "lax",
+    ...security,
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
     path: "/",
   });
@@ -244,8 +280,12 @@ authRouter.post("/register", async (req, res) => {
 
   const normalizedEmail = email.toLowerCase().trim();
 
-  // ─── MODE MOCK ─────────────────────────────────────────
+  // ─── MODE MOCK (DEV uniquement) ─────────────────────────────────
   const isDbUp = await checkDbAvailability();
+  if (!isDbUp && !MOCK_MODE_ALLOWED) {
+    mockUnavailable(res);
+    return;
+  }
   if (!isDbUp) {
     // Vérifier si l'email est déjà utilisé dans les mocks
     const existingMock = MOCK_USERS.find((u) => u.email === normalizedEmail);
@@ -271,26 +311,14 @@ authRouter.post("/register", async (req, res) => {
     MOCK_USERS.push(newMockUser);
 
     // Auto-login
-    const token = signToken({
+    const token = await signToken({
       userId: mockId,
       name,
       role: "gerant",
       storeId: "store-1",
       organizationId: newMockUser.organization_id,
     });
-    res.cookie("access_token", token, {
-      httpOnly: true,
-      secure: res.req?.headers?.["x-forwarded-proto"] === "https" || 
-                   res.req?.protocol === "https" || 
-                   process.env.NODE_ENV === "production" ||
-                   (res.req?.headers?.host && !res.req.headers.host.startsWith("localhost")),
-      sameSite: (res.req?.headers?.["x-forwarded-proto"] === "https" || 
-                   res.req?.protocol === "https" || 
-                   process.env.NODE_ENV === "production" ||
-                   (res.req?.headers?.host && !res.req.headers.host.startsWith("localhost"))) ? "none" : "lax",
-      maxAge: 24 * 60 * 60 * 1000,
-      path: "/",
-    });
+    setAccessCookie(res, token);
     console.log(`[mock] 📧 Email de vérification OTP envoyé à ${normalizedEmail} (mode mock)`);
     res.status(201).json({
       success: true,
@@ -405,8 +433,12 @@ authRouter.post("/verify-email", async (req, res) => {
 
   const normalizedEmail = email.toLowerCase().trim();
 
-  // ─── MODE MOCK ─────────────────────────────────────────
+  // ─── MODE MOCK (DEV uniquement) ─────────────────────────────────
   const isDbUp = await checkDbAvailability();
+  if (!isDbUp && !MOCK_MODE_ALLOWED) {
+    mockUnavailable(res);
+    return;
+  }
   if (!isDbUp) {
     const mockUser = MOCK_USERS.find((u) => u.email === normalizedEmail);
     if (!mockUser) {
@@ -418,26 +450,14 @@ authRouter.post("/verify-email", async (req, res) => {
       res.status(400).json({ success: false, error: "Code de vérification incorrect." });
       return;
     }
-    const token = signToken({
+    const token = await signToken({
       userId: mockUser.id,
       name: mockUser.name,
       role: mockUser.role,
       storeId: mockUser.store_id,
       organizationId: mockUser.organization_id,
     });
-    res.cookie("access_token", token, {
-      httpOnly: true,
-      secure: res.req?.headers?.["x-forwarded-proto"] === "https" || 
-                   res.req?.protocol === "https" || 
-                   process.env.NODE_ENV === "production" ||
-                   (res.req?.headers?.host && !res.req.headers.host.startsWith("localhost")),
-      sameSite: (res.req?.headers?.["x-forwarded-proto"] === "https" || 
-                   res.req?.protocol === "https" || 
-                   process.env.NODE_ENV === "production" ||
-                   (res.req?.headers?.host && !res.req.headers.host.startsWith("localhost"))) ? "none" : "lax",
-      maxAge: 24 * 60 * 60 * 1000,
-      path: "/",
-    });
+    setAccessCookie(res, token);
     res.json({
       success: true,
       message: "Adresse e-mail vérifiée avec succès. Bienvenue !",
@@ -522,7 +542,7 @@ authRouter.post("/verify-email", async (req, res) => {
   );
 
   // Créer une session (auto-login après vérification)
-  const token = signToken({
+  const token = await signToken({
     userId: user.id,
     name: user.name,
     role: user.role,
@@ -560,8 +580,12 @@ authRouter.post("/resend-verification", async (req, res) => {
 
   const normalizedEmail = email.toLowerCase().trim();
 
-  // ─── MODE MOCK ─────────────────────────────────────────
+  // ─── MODE MOCK (DEV uniquement) ─────────────────────────────────
   const isDbUp = await checkDbAvailability();
+  if (!isDbUp && !MOCK_MODE_ALLOWED) {
+    mockUnavailable(res);
+    return;
+  }
   if (!isDbUp) {
     const mockUser = MOCK_USERS.find((u) => u.email === normalizedEmail);
     if (mockUser) {
@@ -646,8 +670,12 @@ authRouter.post("/login", async (req, res) => {
 
   const normalizedEmail = email.toLowerCase().trim();
 
-  // ─── MODE MOCK ─────────────────────────────────────────
+  // ─── MODE MOCK (DEV uniquement) ─────────────────────────────────
   const isDbUp = await checkDbAvailability();
+  if (!isDbUp && !MOCK_MODE_ALLOWED) {
+    mockUnavailable(res);
+    return;
+  }
   if (!isDbUp) {
     const mockUser = MOCK_USERS.find(
       (u) => u.email === normalizedEmail && u.password === password,
@@ -659,7 +687,7 @@ authRouter.post("/login", async (req, res) => {
       });
       return;
     }
-    const token = signToken({
+    const token = await signToken({
       userId: mockUser.id,
       name: mockUser.name,
       role: mockUser.role,
@@ -667,19 +695,7 @@ authRouter.post("/login", async (req, res) => {
       organizationId: mockUser.organization_id,
     });
     // En mode mock, on pose juste l'access token (pas de refresh token en DB)
-    res.cookie("access_token", token, {
-      httpOnly: true,
-      secure: res.req?.headers?.["x-forwarded-proto"] === "https" || 
-                   res.req?.protocol === "https" || 
-                   process.env.NODE_ENV === "production" ||
-                   (res.req?.headers?.host && !res.req.headers.host.startsWith("localhost")),
-      sameSite: (res.req?.headers?.["x-forwarded-proto"] === "https" || 
-                   res.req?.protocol === "https" || 
-                   process.env.NODE_ENV === "production" ||
-                   (res.req?.headers?.host && !res.req.headers.host.startsWith("localhost"))) ? "none" : "lax",
-      maxAge: 24 * 60 * 60 * 1000,
-      path: "/",
-    });
+    setAccessCookie(res, token);
     res.json({
       success: true,
       message: "Connexion réussie. Bienvenue dans votre espace professionnel.",
@@ -773,7 +789,7 @@ authRouter.post("/login", async (req, res) => {
   );
 
   // Créer la session
-  const token = signToken({
+  const token = await signToken({
     userId: user.id,
     name: user.name,
     role: user.role,
@@ -807,8 +823,12 @@ authRouter.post("/forgot-password", async (req, res) => {
 
   const normalizedEmail = email.toLowerCase().trim();
 
-  // ─── MODE MOCK ─────────────────────────────────────────
+  // ─── MODE MOCK (DEV uniquement) ─────────────────────────────────
   const isDbUp = await checkDbAvailability();
+  if (!isDbUp && !MOCK_MODE_ALLOWED) {
+    mockUnavailable(res);
+    return;
+  }
   if (!isDbUp) {
     console.log(`[mock] 📧 Email de réinitialisation demandé pour ${normalizedEmail}`);
     res.json({
@@ -928,7 +948,7 @@ authRouter.post("/reset-password", async (req, res) => {
   );
 
   // Auto-login après réinitialisation
-  const accessToken = signToken({
+  const accessToken = await signToken({
     userId: user.id,
     name: user.name,
     role: user.role,
@@ -1024,8 +1044,12 @@ authRouter.post(
 authRouter.get("/me", requireAuth, async (req: AuthedRequest, res) => {
   const user = req.user!;
 
-  // ─── MODE MOCK ─────────────────────────────────────────
+  // ─── MODE MOCK (DEV uniquement) ─────────────────────────────────
   const isDbUp = await checkDbAvailability();
+  if (!isDbUp && !MOCK_MODE_ALLOWED) {
+    mockUnavailable(res);
+    return;
+  }
   if (!isDbUp) {
     const mockUser = MOCK_USERS.find((u) => u.id === user.userId);
     if (!mockUser) {
@@ -1096,8 +1120,12 @@ authRouter.get("/users", requireAuth, async (req: AuthedRequest, res) => {
 // POST /api/auth/logout — Déconnexion
 // ═══════════════════════════════════════════════════════════════
 authRouter.post("/logout", requireAuth, async (req: AuthedRequest, res) => {
-  // ─── MODE MOCK ─────────────────────────────────────────
+  // ─── MODE MOCK (DEV uniquement) ─────────────────────────────────
   const isDbUp = await checkDbAvailability();
+  if (!isDbUp && !MOCK_MODE_ALLOWED) {
+    mockUnavailable(res);
+    return;
+  }
   if (!isDbUp) {
     res.clearCookie("access_token", { path: "/" });
     res.clearCookie("refresh_token", { path: "/" });
@@ -1125,8 +1153,12 @@ authRouter.post("/logout", requireAuth, async (req: AuthedRequest, res) => {
 // POST /api/auth/refresh — Renouvellement de l'access token
 // ═══════════════════════════════════════════════════════════════
 authRouter.post("/refresh", async (req, res) => {
-  // ─── MODE MOCK ─────────────────────────────────────────
+  // ─── MODE MOCK (DEV uniquement) ─────────────────────────────────
   const isDbUp = await checkDbAvailability();
+  if (!isDbUp && !MOCK_MODE_ALLOWED) {
+    mockUnavailable(res);
+    return;
+  }
   if (!isDbUp) {
     // En mode mock, vérifier l'access token existant
     const token = req.cookies?.access_token;
@@ -1135,30 +1167,19 @@ authRouter.post("/refresh", async (req, res) => {
       return;
     }
     try {
-      const jwt = await import("jsonwebtoken");
+      const { jwtVerify } = await import("jose");
       const { config } = await import("../config");
-      const payload = jwt.default.verify(token, config.jwtSecret) as any;
-      // Renouveler le token
-      const newToken = signToken({
-        userId: payload.userId,
-        name: payload.name,
-        role: payload.role,
-        storeId: payload.storeId,
-        organizationId: payload.organizationId,
+      const key = new TextEncoder().encode(config.jwtSecret);
+      const { payload } = await jwtVerify(token, key);
+      // Renouveler le token (le payload jose est non typé : on revalide les champs)
+      const newToken = await signToken({
+        userId: String(payload.userId),
+        name: String(payload.name),
+        role: payload.role as AuthPayload["role"],
+        storeId: (payload.storeId as string | null) ?? null,
+        organizationId: (payload.organizationId as string | null) ?? null,
       });
-      res.cookie("access_token", newToken, {
-        httpOnly: true,
-        secure: res.req?.headers?.["x-forwarded-proto"] === "https" || 
-                   res.req?.protocol === "https" || 
-                   process.env.NODE_ENV === "production" ||
-                   (res.req?.headers?.host && !res.req.headers.host.startsWith("localhost")),
-        sameSite: (res.req?.headers?.["x-forwarded-proto"] === "https" || 
-                   res.req?.protocol === "https" || 
-                   process.env.NODE_ENV === "production" ||
-                   (res.req?.headers?.host && !res.req.headers.host.startsWith("localhost"))) ? "none" : "lax",
-        maxAge: 24 * 60 * 60 * 1000,
-        path: "/",
-      });
+      setAccessCookie(res, newToken);
       res.json({ success: true, refreshed: true });
     } catch {
       res.status(401).json({ success: false, error: "Session expirée, veuillez vous reconnecter." });
@@ -1210,7 +1231,7 @@ authRouter.post("/refresh", async (req, res) => {
     return;
   }
 
-  const newToken = signToken({
+  const newToken = await signToken({
     userId: userRow.id,
     name: userRow.name,
     role: userRow.role,
@@ -1218,13 +1239,7 @@ authRouter.post("/refresh", async (req, res) => {
     organizationId: userRow.organization_id,
   });
 
-  res.cookie("access_token", newToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 24 * 60 * 60 * 1000,
-    path: "/",
-  });
+  setAccessCookie(res, newToken);
 
   res.json({ success: true, refreshed: true });
 });
