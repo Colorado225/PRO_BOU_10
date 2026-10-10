@@ -10,9 +10,12 @@
 
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import { SignJWT, jwtVerify } from "jose";
 import type { Request, Response, NextFunction } from "express";
 import { config } from "./config";
+
+/** Clé secrète pré-convertie pour jose (HMAC HS256+). */
+const jwtKey = new TextEncoder().encode(config.jwtSecret);
 
 /** Rôles disponibles dans l'ERP */
 export type Role = "gerant" | "caissier" | "boulanger" | "magasinier";
@@ -44,10 +47,12 @@ export const verifyPassword = (plain: string, hash: string): boolean =>
   bcrypt.compareSync(plain, hash);
 
 /** Créer un jeton JWT signé pour un utilisateur (access token - 24h) */
-export const signToken = (payload: AuthPayload): string =>
-  jwt.sign(payload, config.jwtSecret, {
-    expiresIn: config.jwtExpiresIn,
-  } as jwt.SignOptions);
+export const signToken = async (payload: AuthPayload): Promise<string> =>
+  await new SignJWT({ ...payload })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime(config.jwtExpiresIn)
+    .sign(jwtKey);
 
 /** Créer un refresh token aléatoire cryptographiquement sécurisé */
 export const generateRefreshToken = (): string => {
@@ -86,16 +91,16 @@ export const requireAuth = async (
   }
 
   try {
-    // Vérifier la signature et l'expiration du token
-    const payload = jwt.verify(token, config.jwtSecret) as AuthPayload;
+    // Vérifier la signature et l'expiration du token (jose)
+    const { payload } = await jwtVerify(token, jwtKey);
 
     // Attacher l'utilisateur à la requête
     req.user = {
-      userId: payload.userId,
-      name: payload.name,
-      role: payload.role,
-      storeId: payload.storeId,
-      organizationId: payload.organizationId,
+      userId: payload.userId as string,
+      name: payload.name as string,
+      role: payload.role as Role,
+      storeId: (payload.storeId as string | null) ?? null,
+      organizationId: (payload.organizationId as string | null) ?? null,
     };
 
     next();

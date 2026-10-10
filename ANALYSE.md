@@ -215,9 +215,9 @@ et coche les critères d'acceptation correspondants dans ce fichier (ajouter la 
 | P0-1 Cookies httpOnly | ⬜ À faire | | | |
 | P0-2 Fallbacks démo | ⬜ À faire | | | |
 | P0-3 Isolation multi-tenant | ⬜ À faire | | | |
-| P0-4 Unifier JWT (jose) | ⬜ À faire | | | |
+| P0-4 Unifier JWT (jose) | ✅ Fait | 2026-10-10 | 6436e25 | `server/auth.ts` + `auth.routes.ts` migrés vers `jose` ; `jsonwebtoken`/`jwks-rsa`/`@types/jsonwebtoken` supprimés ; 22 tests auth OK ; cookies centralisés via `cookieSecurity`/`setAccessCookie`/`setSessionCookies` |
 | P0-5 Fail-fast DB | ⬜ À faire | | | |
-| P0-6 Assainir Git | ⬜ À faire | | | |
+| P0-6 Assainir Git | ✅ Fait | 2026-10-10 | f797e78 | .gitignore étendu, dist/ et .env sortis du versionnement, .env.example créé. ⚠️ Secret Neon à révoquer (présent dans l'historique). |
 | P1-7 ESLint/Prettier | ⬜ À faire | | | |
 | P1-8 CI GitHub Actions | ⬜ À faire | | | |
 | P1-9 Tests | ⬜ À faire | | | |

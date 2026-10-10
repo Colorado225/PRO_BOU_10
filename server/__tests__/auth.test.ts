@@ -9,7 +9,16 @@
  * - Les options de sécurité des cookies
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import jwt from "jsonwebtoken";
+import { SignJWT, jwtVerify } from "jose";
+
+const TEST_SECRET = "test-secret-key-for-unit-tests-32chars!";
+const testKey = new TextEncoder().encode(TEST_SECRET);
+const joseSign = async (payload: object, expiresIn: string) =>
+  await new SignJWT(payload as any)
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime(expiresIn)
+    .sign(testKey);
 import bcrypt from "bcryptjs";
 
 // Mock de la config avant l'import de auth
@@ -46,7 +55,7 @@ describe("Authentification et refresh tokens", () => {
   // SECTION 1 : Tokens JWT
   // ═══════════════════════════════════════════════════════════════
   describe("Tokens JWT", () => {
-    it("signToken génère un JWT valide avec le payload correct", () => {
+    it("signToken génère un JWT valide avec le payload correct", async () => {
       const payload: AuthPayload = {
         userId: "user-123",
         name: "Jean Dupont",
@@ -55,14 +64,14 @@ describe("Authentification et refresh tokens", () => {
         organizationId: "org-1",
       };
 
-      const token = signToken(payload);
+      const token = await signToken(payload);
 
       // Vérifier que le token est une string non vide
       expect(token).toBeTruthy();
       expect(typeof token).toBe("string");
 
       // Vérifier que le token peut être décodé
-      const decoded = jwt.verify(token, "test-secret-key-for-unit-tests-32chars!") as AuthPayload;
+      const { payload: decoded } = await jwtVerify(token, testKey);
       expect(decoded.userId).toBe("user-123");
       expect(decoded.name).toBe("Jean Dupont");
       expect(decoded.role).toBe("gerant");
@@ -70,7 +79,7 @@ describe("Authentification et refresh tokens", () => {
       expect(decoded.organizationId).toBe("org-1");
     });
 
-    it("signToken génère des tokens différents pour des utilisateurs différents", () => {
+    it("signToken génère des tokens différents pour des utilisateurs différents", async () => {
       const payload1: AuthPayload = {
         userId: "user-1",
         name: "User A",
@@ -86,8 +95,8 @@ describe("Authentification et refresh tokens", () => {
         organizationId: "org-1",
       };
 
-      const token1 = signToken(payload1);
-      const token2 = signToken(payload2);
+      const token1 = await signToken(payload1);
+      const token2 = await signToken(payload2);
 
       expect(token1).not.toBe(token2);
     });
@@ -102,16 +111,12 @@ describe("Authentification et refresh tokens", () => {
       };
 
       // Générer un token expiré (expiré il y a 1 heure)
-      const expiredToken = jwt.sign(payload, "test-secret-key-for-unit-tests-32chars!", {
-        expiresIn: "-1h",
-      });
+      const expiredToken = await joseSign(payload, "-1h");
 
-      expect(() => {
-        jwt.verify(expiredToken, "test-secret-key-for-unit-tests-32chars!");
-      }).toThrow();
+      await expect(jwtVerify(expiredToken, testKey)).rejects.toThrow();
     });
 
-    it("un token signé avec une mauvaise clé est rejeté", () => {
+    it("un token signé avec une mauvaise clé est rejeté", async () => {
       const payload: AuthPayload = {
         userId: "user-1",
         name: "Test",
@@ -120,11 +125,16 @@ describe("Authentification et refresh tokens", () => {
         organizationId: "org-1",
       };
 
-      const token = jwt.sign(payload, "wrong-secret-key");
+      const wrongKey = new TextEncoder().encode("wrong-secret-key");
+      const token = await joseSign(payload, "1h");
+      void wrongKey;
+      const badToken = await new SignJWT({ ...payload })
+        .setProtectedHeader({ alg: "HS256" })
+        .setIssuedAt()
+        .setExpirationTime("1h")
+        .sign(wrongKey);
 
-      expect(() => {
-        jwt.verify(token, "test-secret-key-for-unit-tests-32chars!");
-      }).toThrow();
+      await expect(jwtVerify(badToken, testKey)).rejects.toThrow();
     });
   });
 
@@ -210,7 +220,7 @@ describe("Authentification et refresh tokens", () => {
         storeId: "store-1",
         organizationId: "org-1",
       };
-      const token = signToken(payload);
+      const token = await signToken(payload);
 
       const mockReq = {
         cookies: { access_token: token },
@@ -236,7 +246,7 @@ describe("Authentification et refresh tokens", () => {
         storeId: "store-1",
         organizationId: "org-1",
       };
-      const token = signToken(payload);
+      const token = await signToken(payload);
 
       const mockReq = {
         cookies: {},
@@ -294,11 +304,7 @@ describe("Authentification et refresh tokens", () => {
         storeId: null,
         organizationId: "org-1",
       };
-      const expiredToken = jwt.sign(
-        payload,
-        "test-secret-key-for-unit-tests-32chars!",
-        { expiresIn: "-1h" },
-      );
+      const expiredToken = await joseSign(payload, "-1h");
 
       const mockReq = {
         cookies: { access_token: expiredToken },
@@ -330,8 +336,8 @@ describe("Authentification et refresh tokens", () => {
         organizationId: "org-1",
       };
 
-      const cookieToken = signToken(cookiePayload);
-      const headerToken = signToken(headerPayload);
+      const cookieToken = await signToken(cookiePayload);
+      const headerToken = await signToken(headerPayload);
 
       const mockReq = {
         cookies: { access_token: cookieToken },
