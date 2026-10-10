@@ -109,13 +109,22 @@ export const AiBakeryAssistant: React.FC = () => {
 
       // Fallback response engine if no API key or error
       let reply = '';
-      if (typeof process !== 'undefined' && process.env && process.env.GEMINI_API_KEY) {
-        const ai = new GoogleGenAI();
-        const response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: `${contextSummary}\n\nQuestion de l'artisan boulanger : "${q}"\nDonne une réponse très concrète, professionnelle, axée sur les marges, la qualité du pain, le timing du fournil et l'anti-gaspillage en 3 à 5 paragraphes courts ou puces bien structurées.`,
-        });
-        reply = response.text || '';
+      const geminiApiKey =
+        (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) ||
+        (typeof process !== 'undefined' && (process.env?.VITE_GEMINI_API_KEY || process.env?.GEMINI_API_KEY)) ||
+        '';
+
+      if (geminiApiKey) {
+        try {
+          const ai = new GoogleGenAI({ apiKey: geminiApiKey });
+          const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: `${contextSummary}\n\nQuestion de l'artisan boulanger : "${q}"\nDonne une réponse très concrète, professionnelle, axée sur les marges, la qualité du pain, le timing du fournil et l'anti-gaspillage en 3 à 5 paragraphes courts ou puces bien structurées.`,
+          });
+          reply = response.text || '';
+        } catch (aiErr) {
+          console.warn('[AI Assistant] Utilisation du moteur de règles expert (Gemini indisponible):', aiErr);
+        }
       }
 
       if (!reply) {

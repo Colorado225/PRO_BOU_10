@@ -51,7 +51,10 @@ export const RecipesView: React.FC = () => {
     setActiveTab,
   } = useBakery();
 
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(recipes[0] || null);
+  const [selectedRecipeId, setSelectedRecipeId] = useState<string>(recipes[0]?.id || '');
+  const selectedRecipe = useMemo(() => {
+    return recipes.find((r) => r.id === selectedRecipeId) || recipes[0] || null;
+  }, [recipes, selectedRecipeId]);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [isLaunchBakeModalOpen, setIsLaunchBakeModalOpen] = useState<boolean>(false);
 
@@ -188,7 +191,7 @@ export const RecipesView: React.FC = () => {
             return (
               <button
                 key={r.id}
-                onClick={() => setSelectedRecipe(r)}
+                onClick={() => setSelectedRecipeId(r.id)}
                 className={`w-full text-left p-3.5 rounded-2xl border transition-all ${
                   isSelected
                     ? 'bg-amber-500/15 border-amber-500/50 shadow-md'

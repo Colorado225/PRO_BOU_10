@@ -302,15 +302,15 @@ export const PosView: React.FC = () => {
       tvaRate: 0
     };
 
-    // 3. Générer et imprimer le ticket (58mm par défaut, standard pour les petites caisses)
-    // Imprimer le ticket seulement pour les paiements en espèces (les Mobile Money sont gérés dans le polling)
-    if (selectedPaymentMethod === 'especes') {
-      try {
-        const buffer = generateReceipt(receiptData, "WIDTH_58");
-        await printToBluetoothPrinter(buffer);
-      } catch (printError) {
-        console.error("Erreur lors de l'impression:", printError);
-        // L'erreur est déjà gérée dans printToBluetoothPrinter avec un alert
+    // 3. Générer et imprimer le ticket pour les paiements hors Mobile Money (ou clôturer la vente)
+    if (!mobileOperator) {
+      if (selectedPaymentMethod === 'especes') {
+        try {
+          const buffer = generateReceipt(receiptData, "WIDTH_58");
+          await printToBluetoothPrinter(buffer);
+        } catch (printError) {
+          console.error("Erreur lors de l'impression:", printError);
+        }
       }
 
       setIsPaymentModalOpen(false);

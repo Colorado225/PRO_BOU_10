@@ -104,6 +104,7 @@ export const ProductsView: React.FC = () => {
         category,
         price,
         costPrice,
+        vatRate: editingProduct.vatRate !== undefined ? editingProduct.vatRate : defaultVatRateForCategory(category),
         stock,
         minStock,
         unit,

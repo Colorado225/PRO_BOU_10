@@ -176,24 +176,33 @@ export const generateReceipt = (
   // Articles
   ticket.addBoldLine("QTE  PRODUIT               PRIX");
   data.items.forEach((item) => {
-    const qtyStr = `x${item.quantity}`.padEnd(5);
+    const qty = item.quantity || 0;
+    const price = item.price || 0;
+    const qtyStr = `x${qty}`.padEnd(5);
     const nameStr =
       item.name.length > 18 ? item.name.slice(0, 18) : item.name.padEnd(18);
-    const priceStr = `${(item.price * item.quantity).toFixed(0)} FCFA`;
+    const priceStr = `${(price * qty).toFixed(0)} FCFA`;
     ticket.addLine(`${qtyStr}${nameStr}${priceStr}`);
   });
   ticket.addSeparator();
 
   // Totaux et TVA (conformité fiscale)
-  if (data.discountAmount > 0) {
-    ticket.addColumns("Sous-total", `${data.subtotal.toFixed(0)} FCFA`);
-    ticket.addColumns("Remise", `-${data.discountAmount.toFixed(0)} FCFA`);
+  const discount = data.discountAmount || 0;
+  const subtotal = data.subtotal || 0;
+  const tvaRate = data.tvaRate || 0;
+  const total = data.total || 0;
+  const amountPaid = data.amountPaid || 0;
+  const change = data.change || 0;
+
+  if (discount > 0) {
+    ticket.addColumns("Sous-total", `${subtotal.toFixed(0)} FCFA`);
+    ticket.addColumns("Remise", `-${discount.toFixed(0)} FCFA`);
   }
   ticket.addColumns(
-    `TVA ${(data.tvaRate * 100).toFixed(0)}%`,
-    `${(data.total * data.tvaRate).toFixed(0)} FCFA`,
+    `TVA ${(tvaRate * 100).toFixed(0)}%`,
+    `${(total * tvaRate).toFixed(0)} FCFA`,
   );
-  ticket.addBoldLine(`TOTAL:     ${data.total.toFixed(0)} FCFA`);
+  ticket.addBoldLine(`TOTAL:     ${total.toFixed(0)} FCFA`);
   ticket.addSeparator();
 
   // Paiement
@@ -201,9 +210,9 @@ export const generateReceipt = (
     `Mode: ${data.paymentMethod === "especes" ? "Espèces" : data.paymentMethod}`,
     "",
   );
-  ticket.addColumns(`Montant versé:`, `${data.amountPaid.toFixed(0)} FCFA`);
-  if (data.change > 0) {
-    ticket.addColumns(`Monnaie rendue:`, `${data.change.toFixed(0)} FCFA`);
+  ticket.addColumns(`Montant versé:`, `${amountPaid.toFixed(0)} FCFA`);
+  if (change > 0) {
+    ticket.addColumns(`Monnaie rendue:`, `${change.toFixed(0)} FCFA`);
   }
   ticket.addSeparator();
 
@@ -239,18 +248,18 @@ export const generateZReport = (
 
   // Répartition par mode de paiement
   ticket.addBoldLine("RÉPARTITION DES PAIEMENTS");
-  ticket.addColumns("Espèces", `${data.cashSales.toFixed(0)} FCFA`);
-  ticket.addColumns("Mobile Money", `${data.mobileMoneySales.toFixed(0)} FCFA`);
-  ticket.addColumns("Carte bancaire", `${data.cardSales.toFixed(0)} FCFA`);
+  ticket.addColumns("Espèces", `${(data.cashSales || 0).toFixed(0)} FCFA`);
+  ticket.addColumns("Mobile Money", `${(data.mobileMoneySales || 0).toFixed(0)} FCFA`);
+  ticket.addColumns("Carte bancaire", `${(data.cardSales || 0).toFixed(0)} FCFA`);
   ticket.addSeparator();
 
   // Totaux et TVA collectée (obligation fiscale)
   ticket.addBoldLine("TOTAUX FISCAUX");
   ticket.addColumns(
     "Chiffre d'affaires TTC",
-    `${data.totalSales.toFixed(0)} FCFA`,
+    `${(data.totalSales || 0).toFixed(0)} FCFA`,
   );
-  ticket.addColumns("TVA collectée", `${data.tvaCollected.toFixed(0)} FCFA`);
+  ticket.addColumns("TVA collectée", `${(data.tvaCollected || 0).toFixed(0)} FCFA`);
   ticket.addSeparator();
 
   // Pied de page de clôture
