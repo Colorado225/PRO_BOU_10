@@ -15,9 +15,29 @@ const required = (name: string, fallback?: string): string => {
   return value;
 };
 
+const nodeEnv = process.env.NODE_ENV || "development";
+
+/**
+ * P0-5 : en production, DATABASE_URL est OBLIGATOIRE — aucun fallback
+ * vers une base mock silencieuse n'est toléré (fail-fast au chargement).
+ */
+const databaseUrl = (() => {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    if (nodeEnv === "production") {
+      throw new Error(
+        "[config] ❌ Variable d'environnement manquante : DATABASE_URL. " +
+          "En production, la connexion Neon est obligatoire (aucun fallback mock).",
+      );
+    }
+    return "postgres://localhost:5432/mock";
+  }
+  return url;
+})();
+
 export const config = {
   /** URL de connexion Neon (Postgres serverless). */
-  databaseUrl: process.env.DATABASE_URL || "postgres://localhost:5432/mock",
+  databaseUrl,
   /** Secret de signature des JWT. En production, doit être long et aléatoire. */
   jwtSecret: required("JWT_SECRET", "dev-secret-change-me"),
   /** Durée de validité d'un jeton de session. */
@@ -26,7 +46,7 @@ export const config = {
   port: Number(process.env.PORT || 4000),
   /** Origines autorisées pour le front (CORS). */
   corsOrigin: process.env.CORS_ORIGIN || "http://localhost:3000",
-  nodeEnv: process.env.NODE_ENV || "development",
+  nodeEnv,
   // Secrets webhooks Mobile Money pour vérification des signatures
   waveWebhookSecret: required("WAVE_WEBHOOK_SECRET", "dev-wave-webhook-secret"),
   orangeMoneyWebhookSecret: required(

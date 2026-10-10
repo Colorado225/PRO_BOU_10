@@ -54,8 +54,17 @@ async function initDb(): Promise<void> {
         return;
       }
     } catch (err) {
+      if (config.nodeEnv === "production") {
+        // P0-2 : en production, aucun fallback mock — la base JSON de démo
+        // ne doit jamais servir de source de données. Échec brutal et visible.
+        console.error(
+          "[db] ❌ Neon non accessible en PRODUCTION — échec du démarrage (pas de fallback mock).",
+        );
+        process.exitCode = 1;
+        throw err;
+      }
       console.warn(
-        "[db] ⚠️  Neon non accessible — bascule vers la base locale (mock-data.json)",
+        "[db] ⚠️  Neon non accessible — bascule vers la base locale (mock-data.json, DEV uniquement)",
       );
     }
     useMockDb = true;
@@ -65,8 +74,19 @@ async function initDb(): Promise<void> {
   return initPromise;
 }
 
-// Démarrer l'initialisation immédiatement
-initDb();
+// Démarrer l'initialisation immédiatement.
+// En production, une rejection ici (Neon inaccessible) doit faire échouer le
+// process : sans ce handler, Node >=15 termine déjà avec un code non nul, mais
+// on rend l'échec explicite et documenté (P0-2 / fail-fast).
+initDb().catch((err) => {
+  if (config.nodeEnv === "production") {
+    console.error(
+      "[db] ❌ ÉCHEC FATAL : initialisation base de données impossible en PRODUCTION.",
+      err instanceof Error ? err.message : err,
+    );
+    process.exit(1);
+  }
+});
 
 // ═══════════════════════════════════════════════════════════════
 // API publique

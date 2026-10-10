@@ -14,7 +14,7 @@
  * - POST /api/auth/refresh           — renouvellement de l'access token
  * - GET  /api/auth/users             — liste des utilisateurs (gérant)
  */
-import { Router } from "express";
+import { Router, Response } from "express";
 import bcrypt from "bcryptjs";
 import { query, queryOne } from "../db";
 import {
@@ -38,9 +38,14 @@ import {
 export const authRouter = Router();
 
 // ═══════════════════════════════════════════════════════════════
-// MODE MOCK — Fallback quand la base de données n'est pas accessible
+// MODE MOCK — Fallback quand la base de données n'est pas accessible.
+// STRICTEMENT RÉSERVÉ AU DÉVELOPPEMENT : en production, une DB
+// inaccessible = erreur 503, jamais de comptes de démo (P0-2).
 // ═══════════════════════════════════════════════════════════════
 let dbAvailable: boolean | null = null;
+
+/** Mode mock autorisé uniquement hors production. */
+const MOCK_MODE_ALLOWED = process.env.NODE_ENV !== "production";
 
 /** Teste la connectivité à la base de données. */
 async function checkDbAvailability(): Promise<boolean> {
@@ -49,12 +54,28 @@ async function checkDbAvailability(): Promise<boolean> {
     await query(`SELECT 1`);
     dbAvailable = true;
   } catch {
-    console.warn(
-      "[auth] ⚠️  Base de données indisponible — activation du mode mock (comptes de démo)",
-    );
-    dbAvailable = false;
+    if (!MOCK_MODE_ALLOWED) {
+      console.error(
+        "[auth] ❌ Base de données indisponible en production — mode mock désactivé.",
+      );
+      dbAvailable = false;
+    } else {
+      console.warn(
+        "[auth] ⚠️  Base de données indisponible — activation du mode mock (comptes de démo, DEV uniquement)",
+      );
+      dbAvailable = false;
+    }
   }
   return dbAvailable;
+}
+
+/** Réponse d'erreur uniforme quand le fallback mock est interdit/indisponible. */
+function mockUnavailable(res: Response) {
+  return res.status(503).json({
+    success: false,
+    error:
+      "Base de données indisponible. Le mode démonstration est réservé au développement.",
+  });
 }
 
 /** Comptes de démonstration en mémoire (utilisés quand la DB est inaccessible). */
@@ -259,8 +280,12 @@ authRouter.post("/register", async (req, res) => {
 
   const normalizedEmail = email.toLowerCase().trim();
 
-  // ─── MODE MOCK ─────────────────────────────────────────
+  // ─── MODE MOCK (DEV uniquement) ─────────────────────────────────
   const isDbUp = await checkDbAvailability();
+  if (!isDbUp && !MOCK_MODE_ALLOWED) {
+    mockUnavailable(res);
+    return;
+  }
   if (!isDbUp) {
     // Vérifier si l'email est déjà utilisé dans les mocks
     const existingMock = MOCK_USERS.find((u) => u.email === normalizedEmail);
@@ -408,8 +433,12 @@ authRouter.post("/verify-email", async (req, res) => {
 
   const normalizedEmail = email.toLowerCase().trim();
 
-  // ─── MODE MOCK ─────────────────────────────────────────
+  // ─── MODE MOCK (DEV uniquement) ─────────────────────────────────
   const isDbUp = await checkDbAvailability();
+  if (!isDbUp && !MOCK_MODE_ALLOWED) {
+    mockUnavailable(res);
+    return;
+  }
   if (!isDbUp) {
     const mockUser = MOCK_USERS.find((u) => u.email === normalizedEmail);
     if (!mockUser) {
@@ -551,8 +580,12 @@ authRouter.post("/resend-verification", async (req, res) => {
 
   const normalizedEmail = email.toLowerCase().trim();
 
-  // ─── MODE MOCK ─────────────────────────────────────────
+  // ─── MODE MOCK (DEV uniquement) ─────────────────────────────────
   const isDbUp = await checkDbAvailability();
+  if (!isDbUp && !MOCK_MODE_ALLOWED) {
+    mockUnavailable(res);
+    return;
+  }
   if (!isDbUp) {
     const mockUser = MOCK_USERS.find((u) => u.email === normalizedEmail);
     if (mockUser) {
@@ -637,8 +670,12 @@ authRouter.post("/login", async (req, res) => {
 
   const normalizedEmail = email.toLowerCase().trim();
 
-  // ─── MODE MOCK ─────────────────────────────────────────
+  // ─── MODE MOCK (DEV uniquement) ─────────────────────────────────
   const isDbUp = await checkDbAvailability();
+  if (!isDbUp && !MOCK_MODE_ALLOWED) {
+    mockUnavailable(res);
+    return;
+  }
   if (!isDbUp) {
     const mockUser = MOCK_USERS.find(
       (u) => u.email === normalizedEmail && u.password === password,
@@ -786,8 +823,12 @@ authRouter.post("/forgot-password", async (req, res) => {
 
   const normalizedEmail = email.toLowerCase().trim();
 
-  // ─── MODE MOCK ─────────────────────────────────────────
+  // ─── MODE MOCK (DEV uniquement) ─────────────────────────────────
   const isDbUp = await checkDbAvailability();
+  if (!isDbUp && !MOCK_MODE_ALLOWED) {
+    mockUnavailable(res);
+    return;
+  }
   if (!isDbUp) {
     console.log(`[mock] 📧 Email de réinitialisation demandé pour ${normalizedEmail}`);
     res.json({
@@ -1003,8 +1044,12 @@ authRouter.post(
 authRouter.get("/me", requireAuth, async (req: AuthedRequest, res) => {
   const user = req.user!;
 
-  // ─── MODE MOCK ─────────────────────────────────────────
+  // ─── MODE MOCK (DEV uniquement) ─────────────────────────────────
   const isDbUp = await checkDbAvailability();
+  if (!isDbUp && !MOCK_MODE_ALLOWED) {
+    mockUnavailable(res);
+    return;
+  }
   if (!isDbUp) {
     const mockUser = MOCK_USERS.find((u) => u.id === user.userId);
     if (!mockUser) {
@@ -1075,8 +1120,12 @@ authRouter.get("/users", requireAuth, async (req: AuthedRequest, res) => {
 // POST /api/auth/logout — Déconnexion
 // ═══════════════════════════════════════════════════════════════
 authRouter.post("/logout", requireAuth, async (req: AuthedRequest, res) => {
-  // ─── MODE MOCK ─────────────────────────────────────────
+  // ─── MODE MOCK (DEV uniquement) ─────────────────────────────────
   const isDbUp = await checkDbAvailability();
+  if (!isDbUp && !MOCK_MODE_ALLOWED) {
+    mockUnavailable(res);
+    return;
+  }
   if (!isDbUp) {
     res.clearCookie("access_token", { path: "/" });
     res.clearCookie("refresh_token", { path: "/" });
@@ -1104,8 +1153,12 @@ authRouter.post("/logout", requireAuth, async (req: AuthedRequest, res) => {
 // POST /api/auth/refresh — Renouvellement de l'access token
 // ═══════════════════════════════════════════════════════════════
 authRouter.post("/refresh", async (req, res) => {
-  // ─── MODE MOCK ─────────────────────────────────────────
+  // ─── MODE MOCK (DEV uniquement) ─────────────────────────────────
   const isDbUp = await checkDbAvailability();
+  if (!isDbUp && !MOCK_MODE_ALLOWED) {
+    mockUnavailable(res);
+    return;
+  }
   if (!isDbUp) {
     // En mode mock, vérifier l'access token existant
     const token = req.cookies?.access_token;
