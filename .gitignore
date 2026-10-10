@@ -1,1 +1,25 @@
-node_modules
+# Dépendances
+node_modules/
+
+# Build / artefacts
+dist/
+server.js
+*.tsbuildinfo
+
+# Environnement & secrets — ne jamais committer
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Fichiers temporaires / obsolètes
+*.bak
+*.tmp
+
+# Caches outils
+.vite/
+coverage/
+.eslintcache
