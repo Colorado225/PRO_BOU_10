@@ -23,6 +23,10 @@ import { reportsRouter } from "./routes/reports.routes";
 
 const app = express();
 
+// Le preview Vercel transmet les en-têtes X-Forwarded-For/Forwarded.
+// Faire confiance au proxy garantit une IP stable pour express-rate-limit.
+app.set("trust proxy", 1);
+
 app.use(cors({ origin: config.corsOrigin, credentials: true }));
 // Parser les cookies pour accéder à req.cookies (utilisé pour le token HttpOnly et CSRF)
 app.use(cookieParser());

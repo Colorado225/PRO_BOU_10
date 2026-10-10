@@ -15,6 +15,7 @@
  * - GET  /api/auth/users             — liste des utilisateurs (gérant)
  */
 import { Router } from "express";
+import { randomUUID } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { query, queryOne } from "../db";
 import {
@@ -194,8 +195,8 @@ async function createRefreshToken(userId: string): Promise<string> {
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 7);
   await query(
-    `INSERT INTO refresh_tokens (token, user_id, expires_at) VALUES ($1, $2, $3)`,
-    [refreshToken, userId, expiresAt],
+    `INSERT INTO refresh_tokens (id, token, user_id, expires_at) VALUES ($1, $2, $3, $4)`,
+    [randomUUID(), refreshToken, userId, expiresAt],
   );
   return refreshToken;
 }
